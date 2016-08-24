@@ -39,17 +39,17 @@ All remote API calls return a tuple of HTTP status_code and the response (if pos
 (200, {'expires_in': 604800, 'access_token': 'xxx', 'token_type': 'bearer', 'returning': True, 'refresh_token': 'xxx', 'expiration_date': 1472600000, 'distinct_id': 'xxx'})
 
 >>> # The following API calls are supported (presented without their respective responses)
->>> set_location(lat, lng, city, country=None, name=None) # country and name appear to have no effect
->>> create_post(message=None, imgpath=None, color=None)
->>> get_posts_recent(skip=None, limit=60, mine=False)
->>> get_posts_popular(skip=None, limit=60, mine=False)
->>> get_posts_discussed(skip=None, limit=60, mine=False)
->>> get_post_details(self, post_id)
->>> upvote(post_id)
->>> downvote(post_id)
->>> get_user_config()
->>> get_karma()
->>> delete_post(post_id) # Only works on your own posts ಠ_ಠ
+>>> j.set_location(lat, lng, city, country=None, name=None) # country and name appear to have no effect
+>>> j.create_post(message=None, imgpath=None, color=None)
+>>> j.get_posts_recent(skip=None, limit=60, mine=False)
+>>> j.get_posts_popular(skip=None, limit=60, mine=False)
+>>> j.get_posts_discussed(skip=None, limit=60, mine=False)
+>>> j.get_post_details(self, post_id)
+>>> j.upvote(post_id)
+>>> j.downvote(post_id)
+>>> j.get_user_config()
+>>> j.get_karma()
+>>> j.delete_post(post_id) # Only works on your own posts ಠ_ಠ
 ```
 
 ## Rate-Limits
