@@ -35,7 +35,8 @@ class JodelAccount:
             print("Creating new account.")
             r = self.refresh_all_tokens()
             if r[0] != 200:
-                print("Error creating new account: " + str(r))
+                raise Exception("Error creating new account: "+str(r))
+                #print("Error creating new account: " + str(r))
 
     def _send_request(self, method, endpoint, payload=None):
         url = self.api_url % endpoint
@@ -69,12 +70,12 @@ class JodelAccount:
         req.extend(sorted(urlparse(url).query.replace("=", "%").split("&")))
         req.append(payload if payload else "")
 
-        secret = bytearray([106, 99, 85, 119, 97, 78, 78, 90, 119, 84, 83, 97, 77, 103, 98, 69, 69, 111, 104, 88, 74,
-                            104, 110, 99, 118, 121, 73, 77, 100, 110, 90, 107, 70, 101, 99, 87, 102, 80, 79, 85])
+        secret = bytearray([74, 121, 109, 82, 78, 107, 79, 71, 68, 85, 72, 81, 77, 86, 101, 86, 118, 100, 122, 118, 
+                            97, 120, 99, 75, 97, 101, 117, 74, 75, 87, 87, 70, 101, 105, 104, 110, 89, 110, 115, 89])
         signature = hmac.new(secret, "%".join(req).encode("utf-8"), sha1).hexdigest().upper()
 
         headers['X-Authorization'] = 'HMAC ' + signature
-        headers['X-Client-Type'] = 'android_4.14.1'
+        headers['X-Client-Type'] = 'android_4.17.1'
         headers['X-Timestamp'] = timestamp
         headers['X-Api-Version'] = '0.2'
 
