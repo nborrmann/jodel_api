@@ -70,12 +70,12 @@ class JodelAccount:
         req.extend(sorted(urlparse(url).query.replace("=", "%").split("&")))
         req.append(payload if payload else "")
 
-        secret = bytearray([74, 121, 109, 82, 78, 107, 79, 71, 68, 85, 72, 81, 77, 86, 101, 86, 118, 100, 122, 118, 
-                            97, 120, 99, 75, 97, 101, 117, 74, 75, 87, 87, 70, 101, 105, 104, 110, 89, 110, 115, 89])
+        secret = bytearray([97, 120, 77, 71, 97, 104, 69, 104, 104, 66, 72, 115, 83, 105, 85, 111, 103, 107, 113, 122, 
+                            112, 76, 69, 69, 86, 65, 101, 80, 115, 76, 98, 68, 84, 89, 111, 86, 74, 105, 109, 72])
         signature = hmac.new(secret, "%".join(req).encode("utf-8"), sha1).hexdigest().upper()
 
         headers['X-Authorization'] = 'HMAC ' + signature
-        headers['X-Client-Type'] = 'android_4.17.1'
+        headers['X-Client-Type'] = 'android_4.18.2'
         headers['X-Timestamp'] = timestamp
         headers['X-Api-Version'] = '0.2'
 
