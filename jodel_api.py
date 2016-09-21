@@ -18,7 +18,8 @@ class JodelAccount:
     device_uid = None
 
     def __init__(self, lat, lng, city, country=None, name=None, update_location=True,
-                 access_token=None, device_uid=None, refresh_token=None, distinct_id=None, expiration_date=None):
+                 access_token=None, device_uid=None, refresh_token=None, distinct_id=None, expiration_date=None, 
+                 **kwargs):
         self.lat, self.lng, self.location_str = lat, lng, self._get_location_string(lat, lng, city, country, name)
 
         if access_token and device_uid and refresh_token and distinct_id and expiration_date:
@@ -28,17 +29,17 @@ class JodelAccount:
             self.device_uid = device_uid
             self.access_token = access_token
             if update_location:
-                r = self.set_location(lat, lng, city, country, name)
+                r = self.set_location(lat, lng, city, country, name, **kwargs)
                 print(r)
 
         else:
             print("Creating new account.")
-            r = self.refresh_all_tokens()
+            r = self.refresh_all_tokens(**kwargs)
             if r[0] != 200:
                 raise Exception("Error creating new account: "+str(r))
                 #print("Error creating new account: " + str(r))
 
-    def _send_request(self, method, endpoint, payload=None):
+    def _send_request(self, method, endpoint, payload=None, **kwargs):
         url = self.api_url % endpoint
         headers = {'User-Agent': 'Jodel/4.4.9 Dalvik/2.1.0 (Linux; U; Android 5.1.1; )',
                    'Accept-Encoding': 'gzip',
@@ -50,7 +51,7 @@ class JodelAccount:
 
         payload = payload.encode('utf-8') if payload is not None else None
 
-        resp = s.request(method=method, url=url, data=payload, headers=headers)
+        resp = s.request(method=method, url=url, data=payload, headers=headers, **kwargs)
         try:
             resp_text = json.loads(resp.text, encoding="utf-8")
         except:
@@ -84,14 +85,14 @@ class JodelAccount:
         return '"location":{"loc_accuracy":0.0,"city":"%s","loc_coordinates":{"lat":%f,"lng":%f},"country":"%s",' \
                '"name":"%s"}' % (city, lat, lng, country if country else 'DE', name if name else city)
 
-    def refresh_all_tokens(self):
+    def refresh_all_tokens(self, **kwargs):
         """ Creates a new account with random ID if self.device_uid is not set. Otherwise renews all tokens of the
         account with ID = self.device_uid. """
         if not self.device_uid:
             self.device_uid = ''.join(random.choice('abcdef0123456789') for _ in range(64))
 
         payload = '{%s,"device_uid":"%s",%s}' % (self.client_id, self.device_uid, self.location_str)
-        resp = self._send_request("POST", "/v2/users", payload)
+        resp = self._send_request("POST", "/v2/users", payload, **kwargs)
         if resp[0] == 200:
             self.access_token = resp[1]['access_token']
             self.expiration_date = resp[1]['expiration_date']
@@ -101,9 +102,9 @@ class JodelAccount:
             raise Exception(resp)
         return resp
 
-    def refresh_access_token(self):
+    def refresh_access_token(self, **kwargs):
         payload = '{%s,"distinct_id":"%s","refresh_token":"%s"}' % (self.client_id, self.distinct_id, self.refresh_token)
-        resp = self._send_request("POST", "/v2/users/refreshToken", payload)
+        resp = self._send_request("POST", "/v2/users/refreshToken", payload, **kwargs)
         if resp[0] == 200:
             self.access_token = resp[1]['access_token']
             self.expiration_date = resp[1]['expiration_date']
@@ -113,11 +114,11 @@ class JodelAccount:
         return {'expiration_date': self.expiration_date, 'distinct_id': self.distinct_id,
                 'refresh_token': self.refresh_token, 'device_uid': self.device_uid, 'access_token': self.access_token}
 
-    def set_location(self, lat, lng, city, country=None, name=None):
+    def set_location(self, lat, lng, city, country=None, name=None, **kwargs):
         self.lat, self.lng, self.location_str = lat, lng, self._get_location_string(lat, lng, city, country, name)
-        return self._send_request("PUT", "/v2/users/location", "{%s}" % self.location_str)
+        return self._send_request("PUT", "/v2/users/location", "{%s}" % self.location_str, **kwargs)
 
-    def create_post(self, message=None, imgpath=None, color=None):
+    def create_post(self, message=None, imgpath=None, color=None, **kwargs):
         if not color:
             color = random.choice(self.post_colors)
         if imgpath:
@@ -130,37 +131,37 @@ class JodelAccount:
             print("One of message or imgpath must not be null.")
             return
 
-        return self._send_request("POST", '/v2/posts/', payload=payload)
+        return self._send_request("POST", '/v2/posts/', payload=payload, **kwargs)
 
-    def upvote(self, post_id):
-        return self._send_request("PUT", '/v2/posts/%s/upvote' % post_id)
+    def upvote(self, post_id, **kwargs):
+        return self._send_request("PUT", '/v2/posts/%s/upvote' % post_id, **kwargs)
 
-    def downvote(self, post_id):
-        return self._send_request("PUT", '/v2/posts/%s/downvote' % post_id)
+    def downvote(self, post_id, **kwargs):
+        return self._send_request("PUT", '/v2/posts/%s/downvote' % post_id, **kwargs)
 
-    def get_post_details(self, message_id):
-        return self._send_request("GET", '/v2/posts/%s/' % message_id)
+    def get_post_details(self, message_id, **kwargs):
+        return self._send_request("GET", '/v2/posts/%s/' % message_id, **kwargs)
 
-    def _get_posts(self, post_types, skip=None, limit=60, mine=False):
+    def _get_posts(self, post_types, skip=None, limit=60, mine=False, **kwargs):
         url = '/v2/posts/%s%s?lat=%f&lng=%f' % ('mine' if mine else 'location', post_types, self.lat, self.lng)
         url += '&skip=%d' % skip if skip else ""
         url += '&limit=%d' % limit if limit else ""
-        return self._send_request("GET", url)
+        return self._send_request("GET", url, **kwargs)
 
-    def get_posts_recent(self, skip=None, limit=60, mine=False):
-        return self._get_posts('', skip, limit, mine)
+    def get_posts_recent(self, skip=None, limit=60, mine=False, **kwargs):
+        return self._get_posts('', skip, limit, mine, **kwargs)
 
-    def get_posts_popular(self, skip=None, limit=60, mine=False):
-        return self._get_posts('/popular', skip, limit, mine)
+    def get_posts_popular(self, skip=None, limit=60, mine=False, **kwargs):
+        return self._get_posts('/popular', skip, limit, mine, **kwargs)
 
-    def get_posts_discussed(self, skip=None, limit=60, mine=False):
-        return self._get_posts('/discussed', skip, limit, mine)
+    def get_posts_discussed(self, skip=None, limit=60, mine=False, **kwargs):
+        return self._get_posts('/discussed', skip, limit, mine, **kwargs)
 
-    def get_user_config(self):
-        return self._send_request("GET", "/v3/user/config")
+    def get_user_config(self, **kwargs):
+        return self._send_request("GET", "/v3/user/config", **kwargs)
 
-    def get_karma(self):
-        return self._send_request("GET", "/v2/users/karma")
+    def get_karma(self, **kwargs):
+        return self._send_request("GET", "/v2/users/karma", **kwargs)
 
-    def delete_post(self, post_id):
-        return self._send_request("DELETE", "/v2/posts/%s" % post_id)
+    def delete_post(self, post_id, **kwargs):
+        return self._send_request("DELETE", "/v2/posts/%s" % post_id, **kwargs)
