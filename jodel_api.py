@@ -30,14 +30,14 @@ class JodelAccount:
             self.access_token = access_token
             if update_location:
                 r = self.set_location(lat, lng, city, country, name, **kwargs)
-                print(r)
+                if r[0] != 204:
+                    raise Exception("Error updating location: " + str(r))
 
         else:
             print("Creating new account.")
             r = self.refresh_all_tokens(**kwargs)
             if r[0] != 200:
-                raise Exception("Error creating new account: "+str(r))
-                #print("Error creating new account: " + str(r))
+                raise Exception("Error creating new account: " + str(r))
 
     def _send_request(self, method, endpoint, payload=None, **kwargs):
         url = self.api_url % endpoint
@@ -69,9 +69,9 @@ class JodelAccount:
                "443",
                urlparse(url).path,
                self.access_token if self.access_token else "",
-               timestamp]
-        req.extend(sorted(urlparse(url).query.replace("=", "%").split("&")))
-        req.append(json.dumps(payload, separators=(',',':')))
+               timestamp,
+               *sorted(urlparse(url).query.replace("=", "%").split("&")),
+               json.dumps(payload, separators=(',',':'))]
 
         secret = bytearray([97, 120, 77, 71, 97, 104, 69, 104, 104, 66, 72, 115, 83, 105, 85, 111, 103, 107, 113, 122, 
                             112, 76, 69, 69, 86, 65, 101, 80, 115, 76, 98, 68, 84, 89, 111, 86, 74, 105, 109, 72])
@@ -89,7 +89,6 @@ class JodelAccount:
                 "loc_coordinates": {"lat": lat, "lng": lng}, 
                 "country": country if country else "DE", 
                 "name": name if name else city}
-
 
     def refresh_all_tokens(self, **kwargs):
         """ Creates a new account with random ID if self.device_uid is not set. Otherwise renews all tokens of the
@@ -115,7 +114,7 @@ class JodelAccount:
         payload = {"client_id": self.client_id, 
                    "distinct_id": self.distinct_id, 
                    "refresh_token": self.refresh_token}
-                   
+
         resp = self._send_request("POST", "/v2/users/refreshToken", payload, **kwargs)
         if resp[0] == 200:
             self.access_token = resp[1]['access_token']
