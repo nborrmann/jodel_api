@@ -12,7 +12,7 @@ s = requests.Session()
 
 class JodelAccount:
     post_colors = ['9EC41C', 'FF9908', 'DD5F5F', '8ABDB0', '066A3CB', 'FFBA00']
-    client_id = '"client_id":"81e8a76e-1e02-4d17-9ba0-8a7020261b26"'
+    client_id = '81e8a76e-1e02-4d17-9ba0-8a7020261b26'
     api_url = "https://api.go-tellm.com/api%s"
     access_token = None
     device_uid = None
@@ -20,7 +20,7 @@ class JodelAccount:
     def __init__(self, lat, lng, city, country=None, name=None, update_location=True,
                  access_token=None, device_uid=None, refresh_token=None, distinct_id=None, expiration_date=None, 
                  **kwargs):
-        self.lat, self.lng, self.location_str = lat, lng, self._get_location_string(lat, lng, city, country, name)
+        self.lat, self.lng, self.location_dict = lat, lng, self._get_location_dict(lat, lng, city, country, name)
 
         if access_token and device_uid and refresh_token and distinct_id and expiration_date:
             self.expiration_date = expiration_date
@@ -41,6 +41,7 @@ class JodelAccount:
 
     def _send_request(self, method, endpoint, payload=None, **kwargs):
         url = self.api_url % endpoint
+                
         headers = {'User-Agent': 'Jodel/4.4.9 Dalvik/2.1.0 (Linux; U; Android 5.1.1; )',
                    'Accept-Encoding': 'gzip',
                    'Content-Type': 'application/json; charset=UTF-8'}
@@ -49,7 +50,8 @@ class JodelAccount:
 
         self._sign_request(method, url, headers, payload)
 
-        payload = payload.encode('utf-8') if payload is not None else None
+        if payload:
+            payload = json.dumps(payload, separators=(',',':'))
 
         resp = s.request(method=method, url=url, data=payload, headers=headers, **kwargs)
         try:
@@ -69,7 +71,7 @@ class JodelAccount:
                self.access_token if self.access_token else "",
                timestamp]
         req.extend(sorted(urlparse(url).query.replace("=", "%").split("&")))
-        req.append(payload if payload else "")
+        req.append(json.dumps(payload, separators=(',',':')))
 
         secret = bytearray([97, 120, 77, 71, 97, 104, 69, 104, 104, 66, 72, 115, 83, 105, 85, 111, 103, 107, 113, 122, 
                             112, 76, 69, 69, 86, 65, 101, 80, 115, 76, 98, 68, 84, 89, 111, 86, 74, 105, 109, 72])
@@ -81,9 +83,13 @@ class JodelAccount:
         headers['X-Api-Version'] = '0.2'
 
     @staticmethod
-    def _get_location_string(lat, lng, city, country=None, name=None):
-        return '"location":{"loc_accuracy":0.0,"city":"%s","loc_coordinates":{"lat":%f,"lng":%f},"country":"%s",' \
-               '"name":"%s"}' % (city, lat, lng, country if country else 'DE', name if name else city)
+    def _get_location_dict(lat, lng, city, country=None, name=None):
+        return {"loc_accuracy": 0.0, 
+                "city": city, 
+                "loc_coordinates": {"lat": lat, "lng": lng}, 
+                "country": country if country else "DE", 
+                "name": name if name else city}
+
 
     def refresh_all_tokens(self, **kwargs):
         """ Creates a new account with random ID if self.device_uid is not set. Otherwise renews all tokens of the
@@ -91,7 +97,10 @@ class JodelAccount:
         if not self.device_uid:
             self.device_uid = ''.join(random.choice('abcdef0123456789') for _ in range(64))
 
-        payload = '{%s,"device_uid":"%s",%s}' % (self.client_id, self.device_uid, self.location_str)
+        payload = {"client_id": self.client_id, 
+                   "device_uid": self.device_uid,
+                   "location": self.location_dict}
+
         resp = self._send_request("POST", "/v2/users", payload, **kwargs)
         if resp[0] == 200:
             self.access_token = resp[1]['access_token']
@@ -103,7 +112,10 @@ class JodelAccount:
         return resp
 
     def refresh_access_token(self, **kwargs):
-        payload = '{%s,"distinct_id":"%s","refresh_token":"%s"}' % (self.client_id, self.distinct_id, self.refresh_token)
+        payload = {"client_id": self.client_id, 
+                   "distinct_id": self.distinct_id, 
+                   "refresh_token": self.refresh_token}
+                   
         resp = self._send_request("POST", "/v2/users/refreshToken", payload, **kwargs)
         if resp[0] == 200:
             self.access_token = resp[1]['access_token']
@@ -115,21 +127,22 @@ class JodelAccount:
                 'refresh_token': self.refresh_token, 'device_uid': self.device_uid, 'access_token': self.access_token}
 
     def set_location(self, lat, lng, city, country=None, name=None, **kwargs):
-        self.lat, self.lng, self.location_str = lat, lng, self._get_location_string(lat, lng, city, country, name)
-        return self._send_request("PUT", "/v2/users/location", "{%s}" % self.location_str, **kwargs)
+        self.lat, self.lng, self.location_dict = lat, lng, self._get_location_dict(lat, lng, city, country, name)
+        return self._send_request("PUT", "/v2/users/location", {"location": self.location_dict}, **kwargs)
 
-    def create_post(self, message=None, imgpath=None, color=None, **kwargs):
-        if not color:
-            color = random.choice(self.post_colors)
+    def create_post(self, message=None, imgpath=None, color=None, ancestor=None, **kwargs):
+        payload = {"color": color if color else random.choice(self.post_colors),
+                   "location": self.location_dict}
+        if ancestor:
+            payload["ancestor"] = ancestor
         if imgpath:
             with open(imgpath, "rb") as f:
                 imgdata = base64.b64encode(f.read()).decode("utf-8")
-                payload = '{"color":"%s","image":"%s",%s,"message":"%s"}' % (color, imgdata, self.location_str, message)
-        elif message:
-            payload = '{"color":"%s",%s,"message":"%s"}' % (color, self.location_str, message)
-        else:
-            print("One of message or imgpath must not be null.")
-            return
+                payload["image"] = imgdata
+        if message:
+            payload["message"] = message
+        if not imgpath and not message:
+            raise Exception("One of message or imgpath must not be null.")
 
         return self._send_request("POST", '/v2/posts/', payload=payload, **kwargs)
 
