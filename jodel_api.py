@@ -73,8 +73,7 @@ class JodelAccount:
                *sorted(urlparse(url).query.replace("=", "%").split("&")),
                json.dumps(payload, separators=(',',':'))]
 
-        secret = bytearray([97, 120, 77, 71, 97, 104, 69, 104, 104, 66, 72, 115, 83, 105, 85, 111, 103, 107, 113, 122, 
-                            112, 76, 69, 69, 86, 65, 101, 80, 115, 76, 98, 68, 84, 89, 111, 86, 74, 105, 109, 72])
+        secret = bytearray([ord(c) for c in "axMGahEhhBHsSiUogkqzpLEEVAePsLbDTYoVJimH"])
         signature = hmac.new(secret, "%".join(req).encode("utf-8"), sha1).hexdigest().upper()
 
         headers['X-Authorization'] = 'HMAC ' + signature
