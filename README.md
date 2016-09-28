@@ -22,9 +22,7 @@ Creating new account.
                                refresh_token='xxx', distinct_id='xxx', device_uid='xxx')
 (204, '')
 >>> # Add update_location=False to suppress this behaviour. The constructor will only instantiate an object, without making any remote calls
->>> j = jodel_api.JodelAccount(lat=lat, lng=lng, city=city, update_location=False, 
-                               access_token='xxx', expiration_date='xxx', refresh_token='xxx', 
-                               distinct_id='xxx', device_uid='xxx')
+>>> j = jodel_api.JodelAccount(lat=lat, lng=lng, city=city, update_location=False, **account_data)
 ```
 
 All remote API calls return a tuple of HTTP status_code and the response (if possible a dict (parsed from the API response), but might also be a string (error message)
@@ -50,6 +48,9 @@ All remote API calls return a tuple of HTTP status_code and the response (if pos
 >>> j.get_user_config()
 >>> j.get_karma()
 >>> j.delete_post(post_id) # Only works on your own posts ಠ_ಠ
+
+>>> # You can pass additional arguments (such as proxies and timeouts) to all API calls through the **xargs argument that will be passed to the requests.request() function.
+>>> j.upvote(post_id, timeout=5, proxies={'https': '127.0.0.1:5000'})
 ```
 
 ## Rate-Limits
