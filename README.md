@@ -2,7 +2,7 @@
 
 Inofficial interface to the private API of the Jodel App. Not affiliated with *The Jodel Venture GmbH*.
 
-*Currently creating new accounts through this project is not possible as the request signing procedure has changed.*
+**Currently creating new accounts through this project is not possible as the request signing procedure has changed.**
 
 ##Usage
 
