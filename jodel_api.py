@@ -12,7 +12,7 @@ s = requests.Session()
 
 class JodelAccount:
     post_colors = ['9EC41C', 'FF9908', 'DD5F5F', '8ABDB0', '066A3CB', 'FFBA00']
-    client_id = '81e8a76e-1e02-4d17-9ba0-8a7020261b26'
+    client_id = '6a62f24e-7784-0226-3fffb-5e0e895aaaf'
     api_url = "https://api.go-tellm.com/api%s"
     access_token = None
     device_uid = None
@@ -42,7 +42,7 @@ class JodelAccount:
     def _send_request(self, method, endpoint, payload=None, **kwargs):
         url = self.api_url % endpoint
                 
-        headers = {'User-Agent': 'Jodel/4.4.9 Dalvik/2.1.0 (Linux; U; Android 5.1.1; )',
+        headers = {'User-Agent': 'Jodel/1.1 (compatible; MSIE 10.0; Windows NT 6.2; Trident/6.0)',
                    'Accept-Encoding': 'gzip',
                    'Content-Type': 'application/json; charset=UTF-8'}
         if self.access_token:
@@ -73,11 +73,11 @@ class JodelAccount:
                *sorted(urlparse(url).query.replace("=", "%").split("&")),
                json.dumps(payload, separators=(',',':'))]
 
-        secret = bytearray([ord(c) for c in "axMGahEhhBHsSiUogkqzpLEEVAePsLbDTYoVJimH"])
+        secret = bytearray([ord(c) for c in "bgulhzgo9876GFKgguzTZITFGMn879087vbgGFuz"])
         signature = hmac.new(secret, "%".join(req).encode("utf-8"), sha1).hexdigest().upper()
 
         headers['X-Authorization'] = 'HMAC ' + signature
-        headers['X-Client-Type'] = 'android_4.18.2'
+        headers['X-Client-Type'] = 'wodel_1.1'
         headers['X-Timestamp'] = timestamp
         headers['X-Api-Version'] = '0.2'
 
