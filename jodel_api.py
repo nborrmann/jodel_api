@@ -70,7 +70,7 @@ class JodelAccount:
                urlparse(url).path,
                self.access_token if self.access_token else "",
                timestamp,
-               *sorted(urlparse(url).query.replace("=", "%").split("&")),
+               "%".join(sorted(urlparse(url).query.replace("=", "%").split("&"))),
                json.dumps(payload, separators=(',',':'))]
 
         secret = bytearray([ord(c) for c in "MowxMGuZnoXYgVoAlqmcgUPxdbszEBpBXpjpccbg"])
