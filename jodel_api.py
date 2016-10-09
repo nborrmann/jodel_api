@@ -12,7 +12,7 @@ s = requests.Session()
 
 class JodelAccount:
     post_colors = ['9EC41C', 'FF9908', 'DD5F5F', '8ABDB0', '066A3CB', 'FFBA00']
-    client_id = '6a62f24e-7784-0226-3fffb-5e0e895aaaf'
+    client_id = '81e8a76e-1e02-4d17-9ba0-8a7020261b26'
     api_url = "https://api.go-tellm.com/api%s"
     access_token = None
     device_uid = None
