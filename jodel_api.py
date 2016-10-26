@@ -73,11 +73,11 @@ class JodelAccount:
                "%".join(sorted(urlparse(url).query.replace("=", "%").split("&"))),
                json.dumps(payload, separators=(',',':'))]
 
-        secret = bytearray([ord(c) for c in "MowxMGuZnoXYgVoAlqmcgUPxdbszEBpBXpjpccbg"])
+        secret = bytearray([ord(c) for c in "zQTjsuEvclFMwHxzCEPCtMzClaayFhcgmHtuMwTG"])
         signature = hmac.new(secret, "%".join(req).encode("utf-8"), sha1).hexdigest().upper()
 
         headers['X-Authorization'] = 'HMAC ' + signature
-        headers['X-Client-Type'] = 'android_4.21.1'
+        headers['X-Client-Type'] = 'android_4.23.1'
         headers['X-Timestamp'] = timestamp
         headers['X-Api-Version'] = '0.2'
 
