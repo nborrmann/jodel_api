@@ -23,6 +23,17 @@ Creating new account.
 (204, '')
 >>> # Add update_location=False to suppress this behaviour. The constructor will only instantiate an object, without making any remote calls
 >>> j = jodel_api.JodelAccount(lat=lat, lng=lng, city=city, update_location=False, **account_data)
+
+>>> # For some functionality accounts need to be verified by entering a captcha.
+>>> j.verify_account()
+https://s3-eu-west-1.amazonaws.com/jodel-image-captcha/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.png
+Open the url above in a browser and enter the images containing a racoon (left to right, starting with 0) separated by spaces: 3 5
+Verification failed. Retrying ...
+https://s3-eu-west-1.amazonaws.com/jodel-image-captcha/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.png
+Open the url above in a browser and enter the images containing a racoon (left to right, starting with 0) separated by spaces: 0 3 7
+Account successfully verified.
+>>> j.verify_acccount()
+Account is already verified.
 ```
 
 All remote API calls return a tuple of HTTP status_code and the response (if possible a dict (parsed from the API response), but might also be a string (error message)

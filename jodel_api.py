@@ -120,6 +120,34 @@ class JodelAccount:
             self.expiration_date = resp[1]['expiration_date']
         return resp
 
+    def verify_account(self):
+        r = self.get_user_config()
+        if r[0] == 200 and r[1]['verified'] == True:
+            print("Account is already verified.")
+            #return
+
+        while True:
+            r = self.getCaptcha()
+            if r[0] != 200:
+                raise Exception(resp)
+
+            print(r[1]['image_url'])
+            answer = input("Open the url above in a browser and enter the images containing a racoon (left to right, starting with 0) separated by spaces: ")
+            
+            try:
+                answer = [int(i) for i in answer.split(' ')]
+            except:
+                print("Invalid input. Retrying ...")
+                continue
+
+            r = self.submitCaptcha(r[1]['key'], answer)
+            if r[0] == 200 and r[1]['verified'] == True:
+                print("Account successfully verified.")
+                return
+            else:
+                print("Verification failed. Retrying ...")
+
+            
     def get_account_data(self):
         return {'expiration_date': self.expiration_date, 'distinct_id': self.distinct_id,
                 'refresh_token': self.refresh_token, 'device_uid': self.device_uid, 'access_token': self.access_token}
@@ -176,3 +204,11 @@ class JodelAccount:
 
     def delete_post(self, post_id, **kwargs):
         return self._send_request("DELETE", "/v2/posts/%s" % post_id, **kwargs)
+
+    def getCaptcha(self, **kwargs):
+        return self._send_request("GET", "/v3/user/verification/imageCaptcha", **kwargs)
+
+    def submitCaptcha(self, key, answer, **kwargs):
+        payload = {'key':key, 'answer':answer}
+        return self._send_request("POST", "/v3/user/verification/imageCaptcha", payload=payload, **kwargs)
+
