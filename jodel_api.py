@@ -124,7 +124,7 @@ class JodelAccount:
         r = self.get_user_config()
         if r[0] == 200 and r[1]['verified'] == True:
             print("Account is already verified.")
-            #return
+            return
 
         while True:
             r = self.getCaptcha()
