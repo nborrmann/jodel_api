@@ -59,15 +59,19 @@ The following API calls are supported (presented without their respective respon
 ```python
 >>> j.set_location(lat, lng, city, country=None, name=None) # country and name appear to have no effect
 >>> j.create_post(message=None, imgpath=None, color=None)
->>> j.get_posts_recent(skip=None, limit=60, mine=False)
->>> j.get_posts_popular(skip=None, limit=60, mine=False)
->>> j.get_posts_discussed(skip=None, limit=60, mine=False)
 >>> j.get_post_details(self, post_id)
 >>> j.upvote(post_id)
 >>> j.downvote(post_id)
 >>> j.get_user_config()
 >>> j.get_karma()
 >>> j.delete_post(post_id) # Only works on your own posts ಠ_ಠ
+```
+
+The following calls can be used to read posts. The arguments `mine`, `hashtag`, `channel` are exclusive. If `mine` evaluates to `true`, the other two arguments are discarded, if `hashtag == true`, `channel` is discarded. 
+```python
+>>> j.get_posts_recent(skip=None, limit=60, mine=False, hashtag=None, channel=None)
+>>> j.get_posts_popular(skip=None, limit=60, mine=False, hashtag=None, channel=None)
+>>> j.get_posts_discussed(skip=None, limit=60, mine=False, hashtag=None, channel=None)
 ```
 
 You can pass additional arguments (such as proxies and timeouts) to all API calls through the `**xargs` argument that will be passed to the `requests.request()` function:

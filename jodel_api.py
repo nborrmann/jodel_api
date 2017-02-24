@@ -181,20 +181,33 @@ class JodelAccount:
     def get_post_details(self, message_id, **kwargs):
         return self._send_request("GET", '/v2/posts/%s/' % message_id, **kwargs)
 
-    def _get_posts(self, post_types, skip=None, limit=60, mine=False, **kwargs):
-        url = '/v2/posts/%s%s?lat=%f&lng=%f' % ('mine' if mine else 'location', post_types, self.lat, self.lng)
+    def _get_posts(self, post_types, skip=None, limit=60, mine=False, hashtag=None, channel=None, **kwargs):
+        if mine:
+            category = "mine"
+        elif hashtag:
+            category = "hashtag"
+        elif channel:
+            category = "channel"
+        else:
+            category = "location"
+
+        version = "2" if not (hashtag or channel) else "3"
+
+        url = "/v%s/posts/%s/%s?lat=%f&lng=%f" % (version, category, post_types, self.lat, self.lng)
         url += '&skip=%d' % skip if skip else ""
         url += '&limit=%d' % limit if limit else ""
+        url += '&hashtag=%s' % hashtag if hashtag else ""
+        url += '&channel=%s' % channel if channel else ""
         return self._send_request("GET", url, **kwargs)
 
-    def get_posts_recent(self, skip=None, limit=60, mine=False, **kwargs):
-        return self._get_posts('', skip, limit, mine, **kwargs)
+    def get_posts_recent(self, skip=None, limit=60, mine=False, hashtag=None, channel=None, **kwargs):
+        return self._get_posts('', skip, limit, mine, hashtag, channel, **kwargs)
 
-    def get_posts_popular(self, skip=None, limit=60, mine=False, **kwargs):
-        return self._get_posts('/popular', skip, limit, mine, **kwargs)
+    def get_posts_popular(self, skip=None, limit=60, mine=False, hashtag=None, channel=None, **kwargs):
+        return self._get_posts('popular', skip, limit, mine, hashtag, channel, **kwargs)
 
-    def get_posts_discussed(self, skip=None, limit=60, mine=False, **kwargs):
-        return self._get_posts('/discussed', skip, limit, mine, **kwargs)
+    def get_posts_discussed(self, skip=None, limit=60, mine=False, hashtag=None, channel=None, **kwargs):
+        return self._get_posts('discussed', skip, limit, mine, hashtag, channel, **kwargs)
 
     def get_user_config(self, **kwargs):
         return self._send_request("GET", "/v3/user/config", **kwargs)
