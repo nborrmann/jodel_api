@@ -181,7 +181,7 @@ class JodelAccount:
     def get_post_details(self, message_id, **kwargs):
         return self._send_request("GET", '/v2/posts/%s/' % message_id, **kwargs)
 
-    def _get_posts(self, post_types, skip=None, limit=60, mine=False, hashtag=None, channel=None, **kwargs):
+    def _get_posts(self, post_types="", skip=None, limit=60, mine=False, hashtag=None, channel=None, **kwargs):
         if mine:
             category = "mine"
         elif hashtag:
@@ -194,8 +194,8 @@ class JodelAccount:
         version = "2" if not (hashtag or channel) else "3"
 
         url = "/v%s/posts/%s/%s?lat=%f&lng=%f" % (version, category, post_types, self.lat, self.lng)
-        url += '&skip=%d' % skip if skip else ""
-        url += '&limit=%d' % limit if limit else ""
+        url += '&skip=%s' % skip if skip else ""
+        url += '&limit=%s' % limit if limit else ""
         url += '&hashtag=%s' % hashtag if hashtag else ""
         url += '&channel=%s' % channel if channel else ""
         return self._send_request("GET", url, **kwargs)
