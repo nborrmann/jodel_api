@@ -71,7 +71,7 @@ class JodelAccount:
                self.access_token if self.access_token else "",
                timestamp,
                "%".join(sorted(urlparse(url).query.replace("=", "%").split("&"))),
-               json.dumps(payload, separators=(',',':'))]
+               json.dumps(payload, separators=(',',':')) if payload else ""]
 
         secret = bytearray([ord(c) for c in "SDydTnTdqqaiAMfneLkqXYxamvNuUYOmkqpdiZTu"])
         signature = hmac.new(secret, "%".join(req).encode("utf-8"), sha1).hexdigest().upper()
@@ -173,10 +173,10 @@ class JodelAccount:
         return self._send_request("POST", '/v2/posts/', payload=payload, **kwargs)
 
     def upvote(self, post_id, **kwargs):
-        return self._send_request("PUT", '/v2/posts/%s/upvote' % post_id, **kwargs)
+        return self._send_request("PUT", '/v2/posts/%s/upvote/' % post_id, **kwargs)
 
     def downvote(self, post_id, **kwargs):
-        return self._send_request("PUT", '/v2/posts/%s/downvote' % post_id, **kwargs)
+        return self._send_request("PUT", '/v2/posts/%s/downvote/' % post_id, **kwargs)
 
     def get_post_details(self, message_id, **kwargs):
         return self._send_request("GET", '/v2/posts/%s/' % message_id, **kwargs)
