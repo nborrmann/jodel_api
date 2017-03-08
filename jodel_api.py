@@ -12,8 +12,12 @@ s = requests.Session()
 
 class JodelAccount:
     post_colors = ['9EC41C', 'FF9908', 'DD5F5F', '8ABDB0', '066A3CB', 'FFBA00']
-    client_id = '81e8a76e-1e02-4d17-9ba0-8a7020261b26'
+
     api_url = "https://api.go-tellm.com/api%s"
+    client_id = '81e8a76e-1e02-4d17-9ba0-8a7020261b26'
+    secret = bytearray([ord(c) for c in "OjZvbmHjcGoPhz6OfjIeDRzLXOFjMdJmAIplM7Gq"])
+    version = 'android_4.37.2'
+
     access_token = None
     device_uid = None
 
@@ -73,11 +77,10 @@ class JodelAccount:
                "%".join(sorted(urlparse(url).query.replace("=", "%").split("&"))),
                json.dumps(payload, separators=(',',':')) if payload else ""]
 
-        secret = bytearray([ord(c) for c in "cYjTAwjdJyiuXAyrMhkCDiVZhshhLhotNotLiPVu"])
-        signature = hmac.new(secret, "%".join(req).encode("utf-8"), sha1).hexdigest().upper()
+        signature = hmac.new(self.secret, "%".join(req).encode("utf-8"), sha1).hexdigest().upper()
 
         headers['X-Authorization'] = 'HMAC ' + signature
-        headers['X-Client-Type'] = 'android_4.35.6'
+        headers['X-Client-Type'] = self.version
         headers['X-Timestamp'] = timestamp
         headers['X-Api-Version'] = '0.2'
 
