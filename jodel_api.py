@@ -184,6 +184,9 @@ class JodelAccount:
     def get_post_details(self, message_id, **kwargs):
         return self._send_request("GET", '/v2/posts/%s/' % message_id, **kwargs)
 
+    def get_post_details_v3(self, message_id, **kwargs):
+        return self._send_request("GET", '/v3/posts/%s/details?details=true' % message_id, **kwargs)
+
     def _get_posts(self, post_types="", skip=None, limit=60, mine=False, hashtag=None, channel=None, **kwargs):
         if mine:
             category = "mine"
@@ -203,6 +206,35 @@ class JodelAccount:
         url += '&channel=%s' % channel if channel else ""
         return self._send_request("GET", url, **kwargs)
 
+    def get_share_url(self, post_id, **kwargs):
+        return self._send_request("POST", "/v3/posts/%s/share" % post_id, **kwargs)
+
+    def get_notifications(self, **kwargs):
+        return self._send_request("PUT", "/v3/user/notifications", **kwargs)
+
+    def get_notifications_new(self, **kwargs):
+        return self._send_request("GET", "/v3/user/notifications/new", **kwargs)
+
+    def notification_read(self, post_id=None, notification_id=None, **kwargs):
+        if post_id:
+            return self._send_request("PUT", "/v3/user/notifications/post/%s/read" % post_id, **kwargs)
+        elif notification_id:
+            return self._send_request("PUT", "/v3/user/notifications/%s/read" % notification_id, **kwargs)
+        else:
+            raise Exception("One of post_id or notification_id must not be null.") 
+
+    def pin(self, post_id, **kwargs):
+        return self._send_request("PUT", "/v2/posts/%s/pin" % post_id, **kwargs)
+
+    def unpin(self, post_id, **kwargs):
+        return self._send_request("PUT", "/v2/posts/%s/unpin" % post_id, **kwargs)
+
+    def enable_notifications(self, post_id, **kwargs):
+        return self._send_request("PUT", "/v2/posts/%s/notifications/enable" % post_id, **kwargs)
+
+    def disable_notifications(self, post_id, **kwargs):
+        return self._send_request("PUT", "/v2/posts/%s/notifications/disable" % post_id, **kwargs)
+
     def get_posts_recent(self, skip=None, limit=60, mine=False, hashtag=None, channel=None, **kwargs):
         return self._get_posts('', skip, limit, mine, hashtag, channel, **kwargs)
 
@@ -211,6 +243,15 @@ class JodelAccount:
 
     def get_posts_discussed(self, skip=None, limit=60, mine=False, hashtag=None, channel=None, **kwargs):
         return self._get_posts('discussed', skip, limit, mine, hashtag, channel, **kwargs)
+
+    def get_my_pinned_posts(self, skip=None, limit=60, **kwargs):
+        return self._get_posts('pinned', skip, limit, True, **kwargs)
+
+    def get_my_replied_posts(self, skip=None, limit=60, **kwargs):
+        return self._get_posts('replies', skip, limit, True, **kwargs)
+
+    def get_my_voted_posts(self, skip=None, limit=60, **kwargs):
+        return self._get_posts('voted', skip, limit, True, **kwargs)
 
     def get_user_config(self, **kwargs):
         return self._send_request("GET", "/v3/user/config", **kwargs)
