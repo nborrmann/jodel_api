@@ -2,9 +2,9 @@
 
 Inofficial interface to the private API of the Jodel App. Not affiliated with *The Jodel Venture GmbH*.
 
-##Usage
+## Usage
 
-###Account Creation
+### Account Creation
 
 Calling the bare constructor creates a new account:
 ```python
