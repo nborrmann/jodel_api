@@ -45,7 +45,6 @@ class JodelAccount:
 
     def _send_request(self, method, endpoint, params=None, payload=None, **kwargs):
         url = self.api_url % endpoint
-        
         headers = {'User-Agent': 'Jodel/4.4.9 Dalvik/2.1.0 (Linux; U; Android 5.1.1; )',
                    'Accept-Encoding': 'gzip',
                    'Content-Type': 'application/json; charset=UTF-8',
@@ -55,7 +54,7 @@ class JodelAccount:
 
         resp = s.request(method=method, url=url, params=params, json=payload, headers=headers, **kwargs)
         try:
-            resp_text = resp.json(encoding="utf-8") # json.loads(resp.text, encoding="utf-8")
+            resp_text = resp.json(encoding="utf-8")
         except:
             resp_text = resp.text
 
@@ -72,7 +71,6 @@ class JodelAccount:
                timestamp,
                "%".join(sorted("{}%{}".format(key, value) for key, value in (params if params else {}).items())),
                json.dumps(payload) if payload else ""]
-        print(req)
 
         signature = hmac.new(self.secret, "%".join(req).encode("utf-8"), sha1).hexdigest().upper()
 
