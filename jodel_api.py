@@ -43,29 +43,25 @@ class JodelAccount:
             if r[0] != 200:
                 raise Exception("Error creating new account: " + str(r))
 
-    def _send_request(self, method, endpoint, payload=None, **kwargs):
+    def _send_request(self, method, endpoint, params=None, payload=None, **kwargs):
         url = self.api_url % endpoint
-                
+        
         headers = {'User-Agent': 'Jodel/4.4.9 Dalvik/2.1.0 (Linux; U; Android 5.1.1; )',
                    'Accept-Encoding': 'gzip',
-                   'Content-Type': 'application/json; charset=UTF-8'}
-        if self.access_token:
-            headers['Authorization'] = "Bearer " + self.access_token
+                   'Content-Type': 'application/json; charset=UTF-8',
+                   'Authorization': 'Bearer ' + self.access_token if self.access_token else None}
 
-        self._sign_request(method, url, headers, payload)
+        self._sign_request(method, url, headers, params, payload)
 
-        if payload:
-            payload = json.dumps(payload, separators=(',',':'))
-
-        resp = s.request(method=method, url=url, data=payload, headers=headers, **kwargs)
+        resp = s.request(method=method, url=url, params=params, json=payload, headers=headers, **kwargs)
         try:
-            resp_text = json.loads(resp.text, encoding="utf-8")
+            resp_text = resp.json(encoding="utf-8") # json.loads(resp.text, encoding="utf-8")
         except:
             resp_text = resp.text
 
         return resp.status_code, resp_text
 
-    def _sign_request(self, method, url, headers, payload=None):
+    def _sign_request(self, method, url, headers, params={}, payload=None):
         timestamp = datetime.datetime.utcnow().isoformat()[:-7] + "Z"
 
         req = [method,
@@ -74,8 +70,9 @@ class JodelAccount:
                urlparse(url).path,
                self.access_token if self.access_token else "",
                timestamp,
-               "%".join(sorted(urlparse(url).query.replace("=", "%").split("&"))),
-               json.dumps(payload, separators=(',',':')) if payload else ""]
+               "%".join(sorted("{}%{}".format(key, value) for key, value in (params if params else {}).items())),
+               json.dumps(payload) if payload else ""]
+        print(req)
 
         signature = hmac.new(self.secret, "%".join(req).encode("utf-8"), sha1).hexdigest().upper()
 
@@ -102,7 +99,7 @@ class JodelAccount:
                    "device_uid": self.device_uid,
                    "location": self.location_dict}
 
-        resp = self._send_request("POST", "/v2/users", payload, **kwargs)
+        resp = self._send_request("POST", "/v2/users", payload=payload, **kwargs)
         if resp[0] == 200:
             self.access_token = resp[1]['access_token']
             self.expiration_date = resp[1]['expiration_date']
@@ -117,7 +114,7 @@ class JodelAccount:
                    "distinct_id": self.distinct_id, 
                    "refresh_token": self.refresh_token}
 
-        resp = self._send_request("POST", "/v2/users/refreshToken", payload, **kwargs)
+        resp = self._send_request("POST", "/v2/users/refreshToken", payload=payload, **kwargs)
         if resp[0] == 200:
             self.access_token = resp[1]['access_token']
             self.expiration_date = resp[1]['expiration_date']
@@ -160,26 +157,23 @@ class JodelAccount:
         return self._send_request("PUT", "/v2/users/location", {"location": self.location_dict}, **kwargs)
 
     def create_post(self, message=None, imgpath=None, color=None, ancestor=None, channel="", **kwargs):
+        if not imgpath and not message:
+            raise Exception("One of message or imgpath must not be null.")
+
         payload = {"color": color if color else random.choice(self.post_colors),
-                   "location": self.location_dict}
-        if ancestor:
-            payload["ancestor"] = ancestor
+                   "location": self.location_dict,
+                   "ancestor": ancestor,
+                   "message": message,
+                   "channel": channel}
         if imgpath:
             with open(imgpath, "rb") as f:
                 imgdata = base64.b64encode(f.read()).decode("utf-8")
                 payload["image"] = imgdata
-        if message:
-            payload["message"] = message
-        if channel:
-            payload["channel"] = channel
-
-        if not imgpath and not message:
-            raise Exception("One of message or imgpath must not be null.")
 
         return self._send_request("POST", '/v3/posts/', payload=payload, **kwargs)
 
     def upvote(self, post_id, **kwargs):
-        return self._send_request("PUT", '/v2/posts/%s/upvote/' % post_id, **kwargs)
+        return self._send_request("PUT", '/v2/posts/%s/upvote/' % post_id, params={'home': 'false'}, **kwargs)
 
     def downvote(self, post_id, **kwargs):
         return self._send_request("PUT", '/v2/posts/%s/downvote/' % post_id, **kwargs)
@@ -191,26 +185,14 @@ class JodelAccount:
         return self._send_request("GET", '/v2/posts/%s/' % message_id, **kwargs)
 
     def get_post_details_v3(self, message_id, skip=0, **kwargs):
-        return self._send_request("GET", '/v3/posts/%s/details?details=true&reply=%d' % (message_id, skip), **kwargs)
+        return self._send_request("GET", '/v3/posts/%s/details' % message_id, params={'details': 'true', 'reply': skip}, **kwargs)
 
     def _get_posts(self, post_types="", skip=0, limit=60, mine=False, hashtag="", channel="", **kwargs):
-        if mine:
-            category = "mine"
-        elif hashtag:
-            category = "hashtag"
-        elif channel:
-            category = "channel"
-        else:
-            category = "location"
+        category = "mine" if mine else "hashtag" if hashtag else "channel" if channel else "location"
+        params = {"lat": self.lat, "lng": self.lng, "skip": skip, "limit": limit, "hashtag": hashtag, "channel": channel}
+        url = "/v%s/posts/%s/%s" % ("2" if not (hashtag or channel) else "3", category, post_types)
 
-        version = "2" if not (hashtag or channel) else "3"
-
-        url = "/v%s/posts/%s/%s?lat=%f&lng=%f" % (version, category, post_types, self.lat, self.lng)
-        url += '&skip=%s' % skip if skip else ""
-        url += '&limit=%s' % limit if limit else ""
-        url += '&hashtag=%s' % hashtag if hashtag else ""
-        url += '&channel=%s' % channel if channel else ""
-        return self._send_request("GET", url, **kwargs)
+        return self._send_request("GET", url, params=params, **kwargs)
 
     def get_share_url(self, post_id, **kwargs):
         return self._send_request("POST", "/v3/posts/%s/share" % post_id, **kwargs)
@@ -263,7 +245,7 @@ class JodelAccount:
         return self._send_request("GET", "/v3/user/recommendedChannels", **kwargs)
 
     def get_channel_meta(self, channel, **kwargs):
-        return self._send_request("GET", "/v3/user/channelMeta?channel=%s" % channel, **kwargs)
+        return self._send_request("GET", "/v3/user/channelMeta", params={"channel": channel}, **kwargs)
 
     def get_user_config(self, **kwargs):
         return self._send_request("GET", "/v3/user/config", **kwargs)
