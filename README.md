@@ -60,18 +60,31 @@ The following API calls are supported (presented without their respective respon
 >>> j.set_location(lat, lng, city, country=None, name=None) # country and name appear to have no effect
 >>> j.create_post(message=None, imgpath=None, color=None)
 >>> j.get_post_details(self, post_id)
+>>> j.get_post_details_v3(self, post_id, skip=0) # This api endpoint implements paging and returns at most 50 replies, use the skip parameter to page through the thread. 
 >>> j.upvote(post_id)
 >>> j.downvote(post_id)
+>>> j.pin(post_id)
+>>> j.unpin(post_id)
+>>> j.enable_notifications(post_id)
+>>> j.disable_notifications(post_id)
+>>> j.give_thanks(post_id)
+>>> j.get_share_url(post_id)
+>>> j.delete_post(post_id) # Only works on your own posts ಠ_ಠ
+>>> j.get_notifications()
+>>> j.get_notifications_new()
+>>> j.notification_read(post_id=None, notification_id=None)
 >>> j.get_user_config()
 >>> j.get_karma()
->>> j.delete_post(post_id) # Only works on your own posts ಠ_ಠ
 ```
 
-The following calls can be used to read posts. The arguments `mine`, `hashtag`, `channel` are exclusive. If `mine` evaluates to `true`, the other two arguments are discarded, if `hashtag == true`, `channel` is discarded. 
+The following calls can be used to read posts. The arguments `mine` (boolean), `hashtag`, `channel` (both strings) are exclusive. If `mine` evaluates to `true`, the other two arguments are discarded, if `hashtag` evaluates `true` , `channel` is discarded. 
 ```python
 >>> j.get_posts_recent(skip=None, limit=60, mine=False, hashtag=None, channel=None)
 >>> j.get_posts_popular(skip=None, limit=60, mine=False, hashtag=None, channel=None)
 >>> j.get_posts_discussed(skip=None, limit=60, mine=False, hashtag=None, channel=None)
+>>> j.get_my_pinned_posts(skip=None, limit=60)
+>>> j.get_my_replied_posts(skip=None, limit=60)
+>>> j.get_my_voted_posts(skip=None, limit=60)
 ```
 
 You can pass additional arguments (such as proxies and timeouts) to all API calls through the `**xargs` argument that will be passed to the `requests.request()` function:
