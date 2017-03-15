@@ -181,6 +181,9 @@ class JodelAccount:
     def downvote(self, post_id, **kwargs):
         return self._send_request("PUT", '/v2/posts/%s/downvote/' % post_id, **kwargs)
 
+    def give_thanks(self, post_id, **kwargs):
+        return self._send_request("POST", '/v3/posts/%s/giveThanks' % post_id, **kwargs)
+
     def get_post_details(self, message_id, **kwargs):
         return self._send_request("GET", '/v2/posts/%s/' % message_id, **kwargs)
 
