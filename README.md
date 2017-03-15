@@ -94,6 +94,11 @@ You can pass additional arguments (such as proxies and timeouts) to all API call
 >>> j.upvote(post_id, timeout=5, proxies={'https': '127.0.0.1:5000'})
 ```
 
+### Error Codes
+
+ - 477: "Signed request expected", which means there is a bug in this lib. Open an issue.
+ - 478: "Account not verified", call `verify_account()` and verify the captcha.
+
 ## Rate-Limits
 
 The Jodel API appears to have the following (IP-based) rate-limits
