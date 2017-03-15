@@ -159,7 +159,7 @@ class JodelAccount:
         self.lat, self.lng, self.location_dict = lat, lng, self._get_location_dict(lat, lng, city, country, name)
         return self._send_request("PUT", "/v2/users/location", {"location": self.location_dict}, **kwargs)
 
-    def create_post(self, message=None, imgpath=None, color=None, ancestor=None, **kwargs):
+    def create_post(self, message=None, imgpath=None, color=None, ancestor=None, channel="", **kwargs):
         payload = {"color": color if color else random.choice(self.post_colors),
                    "location": self.location_dict}
         if ancestor:
@@ -170,10 +170,13 @@ class JodelAccount:
                 payload["image"] = imgdata
         if message:
             payload["message"] = message
+        if channel:
+            payload["channel"] = channel
+
         if not imgpath and not message:
             raise Exception("One of message or imgpath must not be null.")
 
-        return self._send_request("POST", '/v2/posts/', payload=payload, **kwargs)
+        return self._send_request("POST", '/v3/posts/', payload=payload, **kwargs)
 
     def upvote(self, post_id, **kwargs):
         return self._send_request("PUT", '/v2/posts/%s/upvote/' % post_id, **kwargs)

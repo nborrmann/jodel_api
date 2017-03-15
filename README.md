@@ -58,7 +58,7 @@ All remote API calls return a tuple of HTTP status_code and the response (if pos
 The following API calls are supported (presented without their respective responses):
 ```python
 >>> j.set_location(lat, lng, city, country=None, name=None) # country and name appear to have no effect
->>> j.create_post(message=None, imgpath=None, color=None)
+>>> j.create_post(message=None, imgpath=None, color=None, ancestor=None, channel="")
 >>> j.get_post_details(post_id)
 >>> j.get_post_details_v3(post_id, skip=0) # This api endpoint implements paging and returns at most 50 replies, use the skip parameter to page through the thread. 
 >>> j.upvote(post_id)
