@@ -259,6 +259,12 @@ class JodelAccount:
     def get_my_voted_posts(self, skip=0, limit=60, **kwargs):
         return self._get_posts('voted', skip, limit, True, **kwargs)
 
+    def get_recommended_channels(self, **kwargs):
+        return self._send_request("GET", "/v3/user/recommendedChannels", **kwargs)
+
+    def get_channel_meta(self, channel, **kwargs):
+        return self._send_request("GET", "/v3/user/channelMeta?channel=%s" % channel, **kwargs)
+
     def get_user_config(self, **kwargs):
         return self._send_request("GET", "/v3/user/config", **kwargs)
 

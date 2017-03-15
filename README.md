@@ -73,6 +73,8 @@ The following API calls are supported (presented without their respective respon
 >>> j.get_notifications()
 >>> j.get_notifications_new()
 >>> j.notification_read(post_id=None, notification_id=None)
+>>> j.get_recommended_channels()
+>>> j.get_channel_meta(channel)
 >>> j.get_user_config()
 >>> j.get_karma()
 ```
