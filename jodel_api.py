@@ -187,8 +187,8 @@ class JodelAccount:
     def get_post_details(self, message_id, **kwargs):
         return self._send_request("GET", '/v2/posts/%s/' % message_id, **kwargs)
 
-    def get_post_details_v3(self, message_id, **kwargs):
-        return self._send_request("GET", '/v3/posts/%s/details?details=true' % message_id, **kwargs)
+    def get_post_details_v3(self, message_id, skip=0, **kwargs):
+        return self._send_request("GET", '/v3/posts/%s/details?details=true&reply=%d' % (message_id, next), **kwargs)
 
     def _get_posts(self, post_types="", skip=None, limit=60, mine=False, hashtag=None, channel=None, **kwargs):
         if mine:
