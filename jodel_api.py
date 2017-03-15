@@ -188,9 +188,9 @@ class JodelAccount:
         return self._send_request("GET", '/v2/posts/%s/' % message_id, **kwargs)
 
     def get_post_details_v3(self, message_id, skip=0, **kwargs):
-        return self._send_request("GET", '/v3/posts/%s/details?details=true&reply=%d' % (message_id, next), **kwargs)
+        return self._send_request("GET", '/v3/posts/%s/details?details=true&reply=%d' % (message_id, skip), **kwargs)
 
-    def _get_posts(self, post_types="", skip=None, limit=60, mine=False, hashtag=None, channel=None, **kwargs):
+    def _get_posts(self, post_types="", skip=0, limit=60, mine=False, hashtag="", channel="", **kwargs):
         if mine:
             category = "mine"
         elif hashtag:
@@ -238,22 +238,22 @@ class JodelAccount:
     def disable_notifications(self, post_id, **kwargs):
         return self._send_request("PUT", "/v2/posts/%s/notifications/disable" % post_id, **kwargs)
 
-    def get_posts_recent(self, skip=None, limit=60, mine=False, hashtag=None, channel=None, **kwargs):
+    def get_posts_recent(self, skip=0, limit=60, mine=False, hashtag="", channel="", **kwargs):
         return self._get_posts('', skip, limit, mine, hashtag, channel, **kwargs)
 
-    def get_posts_popular(self, skip=None, limit=60, mine=False, hashtag=None, channel=None, **kwargs):
+    def get_posts_popular(self, skip=0, limit=60, mine=False, hashtag="", channel="", **kwargs):
         return self._get_posts('popular', skip, limit, mine, hashtag, channel, **kwargs)
 
-    def get_posts_discussed(self, skip=None, limit=60, mine=False, hashtag=None, channel=None, **kwargs):
+    def get_posts_discussed(self, skip=0, limit=60, mine=False, hashtag="", channel="", **kwargs):
         return self._get_posts('discussed', skip, limit, mine, hashtag, channel, **kwargs)
 
-    def get_my_pinned_posts(self, skip=None, limit=60, **kwargs):
+    def get_my_pinned_posts(self, skip=0, limit=60, **kwargs):
         return self._get_posts('pinned', skip, limit, True, **kwargs)
 
-    def get_my_replied_posts(self, skip=None, limit=60, **kwargs):
+    def get_my_replied_posts(self, skip=0, limit=60, **kwargs):
         return self._get_posts('replies', skip, limit, True, **kwargs)
 
-    def get_my_voted_posts(self, skip=None, limit=60, **kwargs):
+    def get_my_voted_posts(self, skip=0, limit=60, **kwargs):
         return self._get_posts('voted', skip, limit, True, **kwargs)
 
     def get_user_config(self, **kwargs):
