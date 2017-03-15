@@ -127,7 +127,7 @@ class JodelAccount:
         while True:
             r = self.getCaptcha()
             if r[0] != 200:
-                raise Exception(resp)
+                raise Exception(str(r[1]))
 
             print(r[1]['image_url'])
             answer = input("Open the url above in a browser and enter the images containing a racoon (left to right, starting with 0) separated by spaces: ")
