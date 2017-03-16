@@ -171,7 +171,7 @@ class JodelAccount:
         return self._send_request("POST", '/v3/posts/', payload=payload, **kwargs)
 
     def upvote(self, post_id, **kwargs):
-        return self._send_request("PUT", '/v2/posts/%s/upvote/' % post_id, params={'home': 'false'}, **kwargs)
+        return self._send_request("PUT", '/v2/posts/%s/upvote/' % post_id, **kwargs)
 
     def downvote(self, post_id, **kwargs):
         return self._send_request("PUT", '/v2/posts/%s/downvote/' % post_id, **kwargs)
