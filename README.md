@@ -96,6 +96,7 @@ You can pass additional arguments (such as proxies and timeouts) to all API call
 
 ### Error Codes
 
+ - 429: "Too Many Requests", you are rate-limited.
  - 477: "Signed request expected", which means there is a bug in this lib. Open an issue.
  - 478: "Account not verified", call `verify_account()` and verify the captcha.
 
