@@ -155,7 +155,7 @@ class JodelAccount:
         return self._send_request("PUT", "/v2/users/location", payload={"location": self.location_dict}, **kwargs)
 
     def create_post(self, message=None, imgpath=None, b64img=None, color=None, ancestor=None, channel="", **kwargs):
-        if not imgpath and not message:
+        if not imgpath and not message and not b64img:
             raise Exception("One of message or imgpath must not be null.")
 
         payload = {"color": color if color else random.choice(self.post_colors),
