@@ -152,7 +152,7 @@ class JodelAccount:
 
     def set_location(self, lat, lng, city, country=None, name=None, **kwargs):
         self.lat, self.lng, self.location_dict = lat, lng, self._get_location_dict(lat, lng, city, country, name)
-        return self._send_request("PUT", "/v2/users/location", {"location": self.location_dict}, **kwargs)
+        return self._send_request("PUT", "/v2/users/location", payload={"location": self.location_dict}, **kwargs)
 
     def create_post(self, message=None, imgpath=None, color=None, ancestor=None, channel="", **kwargs):
         if not imgpath and not message:
