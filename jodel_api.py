@@ -154,7 +154,7 @@ class JodelAccount:
         self.lat, self.lng, self.location_dict = lat, lng, self._get_location_dict(lat, lng, city, country, name)
         return self._send_request("PUT", "/v2/users/location", payload={"location": self.location_dict}, **kwargs)
 
-    def create_post(self, message=None, imgpath=None, color=None, ancestor=None, channel="", **kwargs):
+    def create_post(self, message=None, imgpath=None, b64img=None, color=None, ancestor=None, channel="", **kwargs):
         if not imgpath and not message:
             raise Exception("One of message or imgpath must not be null.")
 
@@ -167,6 +167,8 @@ class JodelAccount:
             with open(imgpath, "rb") as f:
                 imgdata = base64.b64encode(f.read()).decode("utf-8")
                 payload["image"] = imgdata
+        elif b64img:
+            payload["image"] = b64img
 
         return self._send_request("POST", '/v3/posts/', payload=payload, **kwargs)
 
