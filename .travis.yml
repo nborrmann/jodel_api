@@ -3,7 +3,7 @@ python:
   - 3.4
 install:
   - pip install requests
-  - pip install coveralls
+  - pip install codecov
 script:
   coverage run --branch --source=jodel_api -m pytest
 after_success:
