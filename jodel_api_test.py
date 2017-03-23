@@ -1,6 +1,6 @@
 import jodel_api
 from random import uniform
-import time
+import datetime
 import base64
 
 lat, lng, city = 48.144378, 11.573044, "Munich"
@@ -52,7 +52,7 @@ class TestUnverifiedAccount:
 
     def test_follow_channel(self):
         assert self.j.follow_channel("selfies")[0] == 204
-        assert self.j.follow_channel("selfies")[0] == 204
+        assert self.j.unfollow_channel("selfies")[0] == 204
 
     def test_get_config(self):
         r = self.j.get_user_config()
@@ -119,7 +119,7 @@ class TestVerifiedAccount:
 
     def test_post_message(self):
         color = "FF9908"
-        msg = "This is an automated test message. Color is #%s. Location is %f:%f. Time is %s" % (color, lat, lng, time.ctime())
+        msg = "This is an automated test message. Color is #%s. Location is %f:%f. Time is %s" % (color, lat, lng, datetime.datetime.now())
         r = self.j.create_post(msg, color=color)
         assert r[0] == 200
         assert "post_id" in r[1]
@@ -133,7 +133,7 @@ class TestVerifiedAccount:
 
     def test_post_channel_img(self):
         color = "9EC41C"
-        msg = "This is an automated test message. Color is #%s. Location is %f:%f. Time is %s" % (color, lat, lng, time.ctime())
+        msg = "This is an automated test message. Color is #%s. Location is %f:%f. Time is %s" % (color, lat, lng, datetime.datetime.now())
         with open("testimg.png", "rb") as f:
             imgdata = base64.b64encode(f.read()).decode("utf-8")
         
@@ -144,7 +144,7 @@ class TestVerifiedAccount:
         assert self.j.delete_post(r[1]["post_id"])[0] == 204
 
     def test_post_reply(self):
-        msg = "This is an automated test message. Location is %f:%f. Time is %s" % (lat, lng, time.ctime())
+        msg = "This is an automated test message. Location is %f:%f. Time is %s" % (lat, lng, datetime.datetime.now())
         r = self.j.create_post(msg, ancestor=self.pid1)
         assert r[0] == 200
         assert "post_id" in r[1]
