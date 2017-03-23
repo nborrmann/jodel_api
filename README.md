@@ -1,6 +1,6 @@
 # Jodel API
 
-[![Build Status](https://travis-ci.org/nborrmann/jodel_api.svg?branch=master)](https://travis-ci.org/nborrmann/jodel_api) [![Coverage Status](https://coveralls.io/repos/github/nborrmann/jodel_api/badge.svg)](https://coveralls.io/github/nborrmann/jodel_api)
+[![Build Status](https://travis-ci.org/nborrmann/jodel_api.svg?branch=master)](https://travis-ci.org/nborrmann/jodel_api) [![Coverage Status](https://img.shields.io/codecov/c/github/nborrmann/jodel_api.svg)](https://codecov.io/gh/nborrmann/jodel_api)
 
 Inofficial interface to the private API of the Jodel App. Not affiliated with *The Jodel Venture GmbH*.
 
