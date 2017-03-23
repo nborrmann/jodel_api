@@ -1,5 +1,7 @@
 # Jodel API
 
+[![Build Status](https://travis-ci.org/nborrmann/jodel_api.svg?branch=master)](https://travis-ci.org/nborrmann/jodel_api)
+
 Inofficial interface to the private API of the Jodel App. Not affiliated with *The Jodel Venture GmbH*.
 
 ## Usage
@@ -75,6 +77,8 @@ The following API calls are supported (presented without their respective respon
 >>> j.notification_read(post_id=None, notification_id=None)
 >>> j.get_recommended_channels()
 >>> j.get_channel_meta(channel)
+>>> j.follow_channel(channel)
+>>> j.unfollow_channel(channel)
 >>> j.get_user_config()
 >>> j.get_karma()
 ```
@@ -99,6 +103,7 @@ You can pass additional arguments (such as proxies and timeouts) to all API call
  - 429: "Too Many Requests", your IP is rate-limited.
  - 477: "Signed request expected", which means there is a bug in this lib. Open an issue.
  - 478: "Account not verified", call `verify_account()` and verify the captcha.
+ - 502: "Bad Gateway", something went wrong server-side. Try again.
 
 ## Rate-Limits
 
