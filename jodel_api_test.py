@@ -144,7 +144,7 @@ class TestVerifiedAccount:
         assert self.j.delete_post(r[1]["post_id"])[0] == 204
 
     def test_post_reply(self):
-        msg = "This is an automated test message. Color is #%s. Location is %f:%f. Time is %s" % (color, lat, lng, time.ctime())
+        msg = "This is an automated test message. Location is %f:%f. Time is %s" % (lat, lng, time.ctime())
         r = self.j.create_post(msg, ancestor=self.pid1)
         assert r[0] == 200
         assert "post_id" in r[1]
