@@ -239,7 +239,7 @@ class JodelAccount:
         return self._get_posts('replies', skip, limit, True, **kwargs)
 
     def get_my_voted_posts(self, skip=0, limit=60, **kwargs):
-        return self._get_posts('voted', skip, limit, True, **kwargs)
+        return self._get_posts('votes', skip, limit, True, **kwargs)
 
     def get_recommended_channels(self, **kwargs):
         return self._send_request("GET", "/v3/user/recommendedChannels", **kwargs)
