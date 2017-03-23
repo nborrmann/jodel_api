@@ -144,9 +144,8 @@ class TestVerifiedAccount:
         assert self.j.delete_post(r[1]["post_id"])[0] == 204
 
     def test_post_reply(self):
-        color = "FFBA00"
         msg = "This is an automated test message. Color is #%s. Location is %f:%f. Time is %s" % (color, lat, lng, time.ctime())
-        r = self.j.create_post(msg, color=color, ancestor=self.pid1)
+        r = self.j.create_post(msg, ancestor=self.pid1)
         assert r[0] == 200
         assert "post_id" in r[1]
 
@@ -155,7 +154,6 @@ class TestVerifiedAccount:
         assert "children" in p[1]
 
         my_post = next(post for post in p[1]["children"] if post["post_id"] == r[1]["post_id"])
-        assert my_post["color"] == color
         assert my_post["message"] == msg
 
         assert self.j.delete_post(r[1]["post_id"])[0] == 204
