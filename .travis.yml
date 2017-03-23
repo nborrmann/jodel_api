@@ -1,11 +1,10 @@
 language: python
 python:
   - 3.4
-  - 3.5
 install:
   - pip install requests
   - pip install coveralls
 script:
   coverage run --branch --source=jodel_api -m pytest
 after_success:
-  coveralls
+  codecov
