@@ -1,7 +1,9 @@
 import jodel_api
-from random import uniform
+from random import uniform, choice
 import datetime
 import base64
+import pytest
+from string import ascii_lowercase
 
 lat, lng, city = 48.144378, 11.573044, "Munich"
 
@@ -16,6 +18,13 @@ class TestUnverifiedAccount:
         assert r[0] == 200
         assert "posts" in r[1] and "post_id" in r[1]["posts"][0]
         self.pid = r[1]['posts'][0]['post_id']
+
+    def test_reinitalize(self):
+        acc = self.j.get_account_data()
+        with pytest.raises(Exception) as excinfo:
+            j2 = jodel_api.JodelAccount(lat="a", lng="b", city=13, update_location=True, **acc) 
+
+        assert "Error updating location" in str(excinfo.value)
 
     def test_refresh_access_token(self):
         r = self.j.refresh_access_token()
@@ -34,7 +43,9 @@ class TestUnverifiedAccount:
         r = self.j.get_posts_popular()
         assert r[0] == 200
 
-    def test_get_posts_pinned(self):
+    def test_get_my_posts(self):
+        assert self.j.get_my_voted_posts()[0] == 200
+        assert self.j.get_my_replied_posts()[0] == 200
         assert self.j.get_my_pinned_posts()[0] == 200
 
     def test_get_posts_channel(self):
@@ -51,8 +62,8 @@ class TestUnverifiedAccount:
         assert self.j.get_channel_meta(channel)[0] == 200
 
     def test_follow_channel(self):
-        assert self.j.follow_channel("selfies")[0] == 204
-        assert self.j.unfollow_channel("selfies")[0] == 204
+        assert self.j.follow_channel("WasGehtHeute?")[0] == 204
+        assert self.j.unfollow_channel("WasGehtHeute?")[0] == 204
 
     def test_get_config(self):
         r = self.j.get_user_config()
@@ -60,6 +71,10 @@ class TestUnverifiedAccount:
         assert "verified" in r[1]
 
         assert self.j.get_karma()[0] == 200
+
+    def test_notifications(self):
+        assert self.j.get_notifications_new()[0] == 200
+        assert self.j.get_notifications()[0] == 200
 
     def test_captcha(self):
         r = self.j.get_captcha()
@@ -69,14 +84,16 @@ class TestUnverifiedAccount:
 
         assert self.j.submit_captcha(r[1]["key"], [3])[0] == 200
 
-    def test_notifications(self):
-        assert self.j.get_notifications()[0] == 200
-        assert self.j.get_notifications_new()[0] == 200
-
     def test_post_details(self):
         r = self.j.get_post_details(self.pid)
         assert r[0] == 200
         assert len(r[1]["children"]) == r[1]["child_count"]
+
+    def test_post_details_v3(self):
+        assert self.j.get_post_details_v3(self.pid)[0] == 200
+        
+    def test_share_url(self):
+        assert self.j.get_share_url(self.pid)[0] == 200
 
     def test_pin(self):
         assert self.j.pin(self.pid)[0] == 200
@@ -115,11 +132,24 @@ class TestVerifiedAccount:
         assert "posts" in r[1] and "post_id" in r[1]["posts"][0]
         self.pid1 = r[1]['posts'][0]['post_id']
         self.pid2 = r[1]['posts'][1]['post_id']
-        assert self.j.follow_channel("repost")[0] == 204
+
+        assert self.j.follow_channel("WasGehtHeute?")[0] == 204
+
+    def test_notifications(self):
+        assert self.j.get_notifications_new()[0] == 200
+
+        r = self.j.get_notifications()
+        assert r[0] == 200
+        assert "notifications" in r[1]
+        nid = r[1]["notifications"][0]["notification_id"]
+
+        assert self.j.notification_read(notification_id=nid)[0] == 204
+        assert self.j.notification_read(post_id=self.pid1)[0] == 204
 
     def test_post_message(self):
         color = "FF9908"
-        msg = "This is an automated test message. Color is #%s. Location is %f:%f. Time is %s" % (color, lat, lng, datetime.datetime.now())
+        msg = "This is an automated test message. Color is #%s. Location is %f:%f. Time is %s. %s" % \
+                (color, lat, lng, datetime.datetime.now(), "".join(choice(ascii_lowercase) for _ in range(20)))
         r = self.j.create_post(msg, color=color)
         assert r[0] == 200
         assert "post_id" in r[1]
@@ -133,18 +163,20 @@ class TestVerifiedAccount:
 
     def test_post_channel_img(self):
         color = "9EC41C"
-        msg = "This is an automated test message. Color is #%s. Location is %f:%f. Time is %s" % (color, lat, lng, datetime.datetime.now())
+        msg = "This is an automated test message. Color is #%s. Location is %f:%f. Time is %s. %s" % \
+                (color, lat, lng, datetime.datetime.now(), "".join(choice(ascii_lowercase) for _ in range(20)))
         with open("testimg.png", "rb") as f:
-            imgdata = base64.b64encode(f.read()).decode("utf-8")
+            imgdata = base64.b64encode(f.read()).decode("utf-8") + "".join(choice(ascii_lowercase) for _ in range(10))
         
-        r = self.j.create_post(msg, b64img=imgdata, color=color, channel="repost")
+        r = self.j.create_post(msg, b64img=imgdata, color=color, channel="WasGehtHeute?")
         assert r[0] == 200
         assert "post_id" in r[1]
 
         assert self.j.delete_post(r[1]["post_id"])[0] == 204
 
     def test_post_reply(self):
-        msg = "This is an automated test message. Location is %f:%f. Time is %s" % (lat, lng, datetime.datetime.now())
+        msg = "This is an automated test message. Location is %f:%f. Time is %s. %s" % \
+                (lat, lng, datetime.datetime.now(), "".join(choice(ascii_lowercase) for _ in range(20)))
         r = self.j.create_post(msg, ancestor=self.pid1)
         assert r[0] == 200
         assert "post_id" in r[1]
