@@ -125,7 +125,7 @@ class JodelAccount:
             return
 
         while True:
-            r = self.getCaptcha()
+            r = self.get_captcha()
             if r[0] != 200:
                 raise Exception(str(r[1]))
 
@@ -138,7 +138,7 @@ class JodelAccount:
                 print("Invalid input. Retrying ...")
                 continue
 
-            r = self.submitCaptcha(r[1]['key'], answer)
+            r = self.submit_captcha(r[1]['key'], answer)
             if r[0] == 200 and r[1]['verified'] == True:
                 print("Account successfully verified.")
                 return
@@ -256,10 +256,10 @@ class JodelAccount:
     def delete_post(self, post_id, **kwargs):
         return self._send_request("DELETE", "/v2/posts/%s" % post_id, **kwargs)
 
-    def getCaptcha(self, **kwargs):
+    def get_captcha(self, **kwargs):
         return self._send_request("GET", "/v3/user/verification/imageCaptcha", **kwargs)
 
-    def submitCaptcha(self, key, answer, **kwargs):
+    def submit_captcha(self, key, answer, **kwargs):
         payload = {'key':key, 'answer':answer}
         return self._send_request("POST", "/v3/user/verification/imageCaptcha", payload=payload, **kwargs)
 
