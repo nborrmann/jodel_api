@@ -247,6 +247,12 @@ class JodelAccount:
     def get_channel_meta(self, channel, **kwargs):
         return self._send_request("GET", "/v3/user/channelMeta", params={"channel": channel}, **kwargs)
 
+    def follow_channel(self, channel):
+        return self._send_request("PUT", "/v3/user/followChannel", params={"channel": channel})
+
+    def unfollow_channel(self, channel):
+        return self._send_request("PUT", "/v3/user/unfollowChannel", params={"channel": channel})
+
     def get_user_config(self, **kwargs):
         return self._send_request("GET", "/v3/user/config", **kwargs)
 
