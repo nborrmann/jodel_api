@@ -5,6 +5,7 @@ import base64
 import pytest
 from string import ascii_lowercase
 from unittest.mock import MagicMock, patch
+import builtins
 
 lat, lng, city = 48.144378, 11.573044, "Munich"
 
@@ -86,7 +87,7 @@ class TestUnverifiedAccount:
         assert self.j.submit_captcha(r[1]["key"], [13])[0] == 200
 
     @patch('jodel_api.JodelAccount.submit_captcha', return_value=(200, {'verified': True}))
-    @patch('jodel_api.input', side_effect="0 1 5 7")
+    @patch('builtins.input', side_effect="0 1 5 7")
     def test_verify_success(self, input_func, submit_func, capsys):
         self.j.verify_account()
 
@@ -95,7 +96,7 @@ class TestUnverifiedAccount:
         assert "https://" == lines[0][:8]
         assert "Account successfully verified." == lines[1]
 
-    @patch("jodel_api.input", side_effect=["0 1 13 25", "asdf asdf", KeyboardInterrupt()])
+    @patch("builtins.input", side_effect=["0 1 13 25", "asdf asdf", KeyboardInterrupt()])
     def test_verify_fail(self, input_func, capsys):
         with pytest.raises(KeyboardInterrupt) as excinfo:
             self.j.verify_account()
