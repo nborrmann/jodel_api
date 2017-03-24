@@ -100,10 +100,20 @@ You can pass additional arguments (such as proxies and timeouts) to all API call
 
 ### Error Codes
 
- - 429: "Too Many Requests", your IP is rate-limited.
- - 477: "Signed request expected", which means there is a bug in this lib. Open an issue.
- - 478: "Account not verified", call `verify_account()` and verify the captcha.
- - 502: "Bad Gateway", something went wrong server-side. Try again.
+ - **429 "Too Many Requests"**: Your IP is rate-limited.
+ - **477 "Signed Request Expected"**: This library should handle request signing. If this happens on the latest version of `jodel_api` there is a bug in this library. Please open an issue.
+ - **478 "Account not verified"**: Solve the captcha challenge (eg. through `verify_account()`).
+ - **502 "Bad Gateway"**:  Something went wrong server-side. This happens pretty randomly. `jodel_api` automatically retries two times when it sees this error. If you encounter this status, the jodel servers are probably having issues. Try again later.
+
+### Tests
+
+Nearly all tests in `jodel_api_test.py` are integration tests, which means they actually hit the Jodel servers. These can fail for any number of reasons (eg. connectivity issues), which does not necessarily imply there is something wrong with this library. As this library tries to make few assumptions about the content of the json responses they test mostly for status codes, not the contents of the responses (ie. they test whether the API endpoints are still valid).
+
+For the tests in `class TestUnverifiedAccount` a new account is created on every run and they test read-only functions for which the account does not need to be verified. Tests in `class TestVerifiedAccount` reuse the same already verified account to test voting and creating posts. Please do not run these unnecessarily as the account might get banned. If you need the tests, overwrite the account-data to use our own verfied account.
+
+Run the tests with
+
+```pytest -v jodel_api_test.py::TestUnverifiedAccount```
 
 ## Rate-Limits
 
