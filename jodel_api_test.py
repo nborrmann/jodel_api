@@ -6,6 +6,7 @@ import pytest
 from string import ascii_lowercase
 from unittest.mock import MagicMock, patch
 import builtins
+import requests
 
 lat, lng, city = 48.144378, 11.573044, "Munich"
 
@@ -137,6 +138,22 @@ class TestUnverifiedAccount:
         r = self.j.disable_notifications(self.pid)
         assert r[0] == 200
         assert r[1]["notifications_enabled"] == False
+
+    @patch('jodel_api.s.request')
+    def test_bad_gateway_retry(self, requests_func):
+        requests_func.return_value = MagicMock(status_code=502, text="Bad Gateway")
+
+        r = self.j.enable_notifications(self.pid)
+        assert r[0] == 502
+        assert requests_func.call_count == 3
+
+    @patch('jodel_api.s.request')
+    def test_bad_gateway_no_retry(self, requests_func):
+        requests_func.return_value = MagicMock(status_code=200, json={'notifications_enabled': True})
+
+        r = self.j.enable_notifications(self.pid)
+        assert r[0] == 200
+        assert requests_func.call_count == 1
 
 
 class TestVerifiedAccount:
