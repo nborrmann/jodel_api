@@ -4,6 +4,7 @@ import datetime
 import base64
 import pytest
 from string import ascii_lowercase
+from unittest.mock import MagicMock, patch
 
 lat, lng, city = 48.144378, 11.573044, "Munich"
 
@@ -82,7 +83,31 @@ class TestUnverifiedAccount:
         assert "image_url" in r[1]
         assert "key" in r[1]
 
-        assert self.j.submit_captcha(r[1]["key"], [3])[0] == 200
+        assert self.j.submit_captcha(r[1]["key"], [13])[0] == 200
+
+    @patch('jodel_api.JodelAccount.submit_captcha', return_value=(200, {'verified': True}))
+    @patch('jodel_api.input', side_effect="0 1 5 7")
+    def test_verify_success(self, input_func, submit_func, capsys):
+        self.j.verify_account()
+
+        out, err = capsys.readouterr()
+        lines = out.split("\n")
+        assert "https://" == lines[0][:8]
+        assert "Account successfully verified." == lines[1]
+
+    @patch("jodel_api.input", side_effect=["0 1 13 25", "asdf asdf", KeyboardInterrupt()])
+    def test_verify_fail(self, input_func, capsys):
+        with pytest.raises(KeyboardInterrupt) as excinfo:
+            self.j.verify_account()
+    
+        assert "KeyboardInterrupt" in str(excinfo)
+        out, err = capsys.readouterr()
+        lines = out.split("\n")
+        assert "https://" == lines[0][:8]
+        assert "Verification failed. Retrying ..." == lines[1]
+        assert "https://" == lines[2][:8]
+        assert "Invalid input. Retrying ..." == lines[3]
+        assert "https://" == lines[4][:8]
 
     def test_post_details(self):
         r = self.j.get_post_details(self.pid)
@@ -113,7 +138,6 @@ class TestUnverifiedAccount:
         assert r[1]["notifications_enabled"] == False
 
 
-
 class TestVerifiedAccount:
     acc = {'device_uid': 'cbbbdfb235d92b360a96e20b5de710ea14cc1f56fd7f7d70d9fd8b08600ecf2a',
            'expiration_date': 1490881346,
@@ -127,13 +151,18 @@ class TestVerifiedAccount:
         r = self.j.refresh_all_tokens()
         assert r[0] == 200
 
-        r = self.j.get_posts_popular()
+        r = self.j.get_posts_discussed()
         assert r[0] == 200
         assert "posts" in r[1] and "post_id" in r[1]["posts"][0]
         self.pid1 = r[1]['posts'][0]['post_id']
         self.pid2 = r[1]['posts'][1]['post_id']
 
         assert self.j.follow_channel("WasGehtHeute?")[0] == 204
+
+    def test_verify(self, capsys):
+        self.j.verify_account()
+        out, err = capsys.readouterr()
+        assert out == "Account is already verified.\n"
 
     def test_notifications(self):
         assert self.j.get_notifications_new()[0] == 200
@@ -193,6 +222,3 @@ class TestVerifiedAccount:
     def test_vote(self):
         assert self.j.upvote(self.pid1)[0] == 200
         assert self.j.downvote(self.pid2)[0] == 200
-
-
-
