@@ -157,11 +157,11 @@ class TestUnverifiedAccount:
 
 
 class TestVerifiedAccount:
-    acc = {'device_uid': 'cbbbdfb235d92b360a96e20b5de710ea14cc1f56fd7f7d70d9fd8b08600ecf2a',
-           'expiration_date': 1490881346,
-           'refresh_token': '1d026f42-c0b5-461e-901f-8367c12aea20',
-           'distinct_id': '58d3d0c217c50b1a006139e7',
-           'access_token': '76546754-dba5a820-fbe5dfc2-24ae-445c-a21c-33c9414ae429'}
+    acc = {'access_token': '68842429-4ef89935-77579146-3511-49ca-a56e-190dd0ceab66',
+           'distinct_id': '58d5394ac60266bb0651a1e6',
+           'refresh_token': 'e541f975-38a4-4467-9a36-8f1171efac89',
+           'expiration_date': 1490973642,
+           'device_uid': 'a8aa02da6f965ed0e52bc8678314ac423e6aa7834849d6396911aa9608762dba'}
 
     @classmethod
     def setup_class(self):
@@ -198,6 +198,7 @@ class TestVerifiedAccount:
         msg = "This is an automated test message. Color is #%s. Location is %f:%f. Time is %s. %s" % \
                 (color, lat, lng, datetime.datetime.now(), "".join(choice(ascii_lowercase) for _ in range(20)))
         r = self.j.create_post(msg, color=color)
+        print(r)
         assert r[0] == 200
         assert "post_id" in r[1]
 
@@ -205,6 +206,42 @@ class TestVerifiedAccount:
         assert p[0] == 200
         assert p[1]["color"] == color
         assert p[1]["message"] == msg
+
+        assert self.j.delete_post(r[1]["post_id"])[0] == 204
+
+    def test_post_reply(self):
+        msg = "This is an automated test message. Location is %f:%f. Time is %s. %s" % \
+                (lat, lng, datetime.datetime.now(), "".join(choice(ascii_lowercase) for _ in range(20)))
+        r = self.j.create_post(msg, ancestor=self.pid1)
+        print(r)
+        assert r[0] == 200
+        assert "post_id" in r[1]
+
+        p = self.j.get_post_details(self.pid1)
+        assert p[0] == 200
+        assert "children" in p[1]
+
+        my_post = next(post for post in p[1]["children"] if post["post_id"] == r[1]["post_id"])
+        assert my_post["message"] == msg
+
+        assert self.j.delete_post(r[1]["post_id"])[0] == 204
+
+    def test_post_channel(self):
+        color = "9EC41C"
+        channel = "WasGehtHeute?"
+        msg = "This is an automated test message to the channel %s. Color is #%s. Location is %f:%f. Time is %s. %s" % \
+                (channel, color, lat, lng, datetime.datetime.now(), "".join(choice(ascii_lowercase) for _ in range(20)))
+        
+        r = self.j.create_post(msg, color=color, channel=channel)
+        print(r)
+        assert r[0] == 200
+        assert "post_id" in r[1]
+
+        p = self.j.get_posts_recent(channel=channel)
+        assert p[0] == 200
+        assert r[1]["post_id"] in [post["post_id"] for post in p[1]["posts"]]
+        my_post = next(post for post in p[1]["posts"] if post["post_id"] == r[1]["post_id"])
+        assert my_post["message"] == msg
 
         assert self.j.delete_post(r[1]["post_id"])[0] == 204
 
@@ -216,24 +253,9 @@ class TestVerifiedAccount:
             imgdata = base64.b64encode(f.read()).decode("utf-8") + "".join(choice(ascii_lowercase) for _ in range(10))
         
         r = self.j.create_post(msg, b64img=imgdata, color=color, channel="WasGehtHeute?")
+        print(r)
         assert r[0] == 200
         assert "post_id" in r[1]
-
-        assert self.j.delete_post(r[1]["post_id"])[0] == 204
-
-    def test_post_reply(self):
-        msg = "This is an automated test message. Location is %f:%f. Time is %s. %s" % \
-                (lat, lng, datetime.datetime.now(), "".join(choice(ascii_lowercase) for _ in range(20)))
-        r = self.j.create_post(msg, ancestor=self.pid1)
-        assert r[0] == 200
-        assert "post_id" in r[1]
-
-        p = self.j.get_post_details(self.pid1)
-        assert p[0] == 200
-        assert "children" in p[1]
-
-        my_post = next(post for post in p[1]["children"] if post["post_id"] == r[1]["post_id"])
-        assert my_post["message"] == msg
 
         assert self.j.delete_post(r[1]["post_id"])[0] == 204
 
