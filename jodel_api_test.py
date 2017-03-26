@@ -7,6 +7,7 @@ from string import ascii_lowercase
 from unittest.mock import MagicMock, patch
 import builtins
 import requests
+import os
 
 lat, lng, city = 48.144378, 11.573044, "Munich"
 
@@ -156,16 +157,15 @@ class TestUnverifiedAccount:
         assert requests_func.call_count == 1
 
 
+@pytest.mark.skipif(not os.environ.get("JODEL_ACCOUNT"), reason="Requires an account uid as environment variable")
 class TestVerifiedAccount:
-    acc = {'access_token': '68842429-4ef89935-77579146-3511-49ca-a56e-190dd0ceab66',
-           'distinct_id': '58d5394ac60266bb0651a1e6',
-           'refresh_token': 'e541f975-38a4-4467-9a36-8f1171efac89',
-           'expiration_date': 1490973642,
-           'device_uid': 'a8aa02da6f965ed0e52bc8678314ac423e6aa7834849d6396911aa9608762dba'}
 
     @classmethod
     def setup_class(self):
-        self.j = jodel_api.JodelAccount(lat, lng, city, update_location=False, **self.acc)
+        # this hack only works because we immediately refresh all tokens after instantiating the account
+        acc = {'access_token': 'A', 'distinct_id': 'A', 'refresh_token': 'A', 'expiration_date': 1, 
+               'device_uid': os.environ.get("JODEL_ACCOUNT")}
+        self.j = jodel_api.JodelAccount(lat, lng, city, update_location=False, **acc)
         r = self.j.refresh_all_tokens()
         assert r[0] == 200
 

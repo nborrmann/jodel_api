@@ -107,13 +107,25 @@ You can pass additional arguments (such as proxies and timeouts) to all API call
 
 ### Tests
 
-Nearly all tests in `jodel_api_test.py` are integration tests, which means they actually hit the Jodel servers. These can fail for any number of reasons (eg. connectivity issues), which does not necessarily imply there is something wrong with this library. As this library tries to make few assumptions about the content of the json responses they test mostly for status codes, not the contents of the responses (ie. they test whether the API endpoints are still valid).
+Nearly all tests in `jodel_api_test.py` are integration tests, which actually hit the Jodel servers. These can fail for any number of reasons (eg. connectivity issues), which does not necessarily imply there is something wrong with this library. As this library tries to make few assumptions about the content of the json responses they test mostly for status codes, not the contents of the responses (ie. they test whether the API endpoints are still valid).
 
-For the tests in `class TestUnverifiedAccount` a new account is created on every run and they test read-only functions for which the account does not need to be verified. Tests in `class TestVerifiedAccount` reuse the same already verified account to test voting and creating posts. Please do not run these unnecessarily as the account might get banned. If you need the tests, overwrite the account-data to use our own verfied account.
+ - For the tests in `class TestUnverifiedAccount` a new account is created on every run and they test read-only functions for which the account does not need to be verified. 
+ - Tests in `class TestVerifiedAccount` need an already verified account to test voting and creating posts (posts are deleted after creation). To run these tests you need to verify an account by solving the captcha and save its device_uid in the environment_variable `JODEL_ACCOUNT`. Run `j.get_account_data()['device_uid']` to get the value.
+
+    Linux:
+    ```
+    export JODEL_ACCOUNT=a8aa02[...]dba
+    ```
+    Windows (you need to restart the cmd/shell for this to take effect, or set it through gui):
+    ```
+    setx JODEL_ACCOUNT a8aa02[...]dba
+    ```
+    If this variable is not present, the tests will be skipped.
+
 
 Run the tests with
 
-```pytest -v jodel_api_test.py::TestUnverifiedAccount```
+```pytest -v```
 
 ## Rate-Limits
 
