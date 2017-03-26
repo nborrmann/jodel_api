@@ -6,6 +6,6 @@ install:
   - pip install codecov
   - python setup.py -q install
 script:
-  coverage run --branch --source=jodel_api -m python setup.py test
+  coverage run --branch --source=jodel_api setup.py test
 after_success:
   codecov
