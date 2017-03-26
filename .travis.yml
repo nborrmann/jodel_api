@@ -6,6 +6,14 @@ install:
   - pip install codecov
   - python setup.py -q install
 script:
-  coverage run --branch --source=jodel_api setup.py test
+  coverage run --branch --source=jodel_api -m pytest -v
 after_success:
   codecov
+deploy:
+  true:
+    branch: master
+  distributions: sdist bdist_wheel
+  user: nborrmann
+  provider: pypi
+  password:
+    secure: "S5EI4q+Wu04YprKfpUMGVePCry6FXHYjB4nufz0FzwE1ZsDCZ46uaVVDV4sf6ip1bQrVpZkmtK+33V/qbghjpWGq6tTLFkEMtO7YX7YWK2HCSQb1Lgot0e/VWcgp2cExvqzwMtH1JqhNcazdsPWOGvlDLXZc9OOgBbJN9uB4S2vLQsBhLy9oXzcPS6GqruWW7ewoOG7l4XQBkAuf3nX14mouej/7OocMK4cFKdQtRIFNBgGYZ0FNROvBsxoK463IMqGIIHV+YpqBwTMEPyiBuDqye0ViSn146HEyf7qmDzpU1iDqfXXRE5EjS6er1y5HOsHaigNcSijVZdry3IPgPD5LCQbbD9UXMlodNtVav8MU1joENVsDR7wtkqwlIkju91xIJEulQ3Y9s1Wfi6RsmheHBrRJ5ZZXP+UuDBRuhecIfN4MKdDNX1fDEyMlyjnHzKQnk+I5Jq3TyULi2QbnJMAlRpD0dC+U93Sh33AtQmdZS3rbhUOSaI1DOzdN1JawsG99fO9+RP6YqwnEXe+esDUWwIr5lFYPnsh3vmt7hcSIYeJN50PWQouEdEhOXtcx0pm0dizNfIJCesGb39ADM1P1c/yWrJr8WmDfI+j3ERu2e6Lx977B4kCUKGbsZx45EIH0H4m5KqVHKq+QDc9bVJ2/NqajQSpEdvxms7c4dD0="
