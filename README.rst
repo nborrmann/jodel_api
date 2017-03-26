@@ -1,7 +1,7 @@
 Jodel API
 =========
 
-|Build Status| |Coverage Status|
+|Build Status| |Coverage Status| |Python Versions| |PyPI Version| |License|
 
 Inofficial interface to the private API of the Jodel App. Not affiliated
 with *The Jodel Venture GmbH*.
@@ -180,8 +180,8 @@ the API endpoints are still valid).
 -  Tests in ``class TestVerifiedAccount`` need an already verified
    account to test voting and creating posts (posts are deleted after
    creation). To run these tests you need to verify an account by
-   solving the captcha and save its device\_uid in the
-   environment\_variable ``JODEL_ACCOUNT``. Run
+   solving the captcha and save its ``device_uid`` in the
+   environment variable ``JODEL_ACCOUNT``. Run
    ``j.get_account_data()['device_uid']`` to get the value.
 
    Linux:
@@ -197,11 +197,11 @@ the API endpoints are still valid).
 
        setx JODEL_ACCOUNT a8aa02[...]dba
 
-   If this variable is not present, the tests will be skipped.
+   If this variable is not present, these tests will be skipped.
 
 Run the tests with
 
-``pytest -v``
+``python setup.py test``
 
 Rate-Limits
 -----------
@@ -218,3 +218,9 @@ They also hand out perma-bans if you overdo it.
    :target: https://travis-ci.org/nborrmann/jodel_api
 .. |Coverage Status| image:: https://img.shields.io/codecov/c/github/nborrmann/jodel_api.svg
    :target: https://codecov.io/gh/nborrmann/jodel_api
+.. |Python Versions| image:: https://img.shields.io/pypi/pyversions/jodel_api.svg
+   :target: https://pypi.python.org/pypi/jodel_api/
+.. |PyPI Version| image:: https://img.shields.io/pypi/v/jodel_api.svg
+   :target: https://pypi.python.org/pypi/jodel_api/
+.. |License| image:: https://img.shields.io/pypi/l/jodel_api.svg
+   :target: https://pypi.python.org/pypi/jodel_api/
