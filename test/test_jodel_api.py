@@ -249,7 +249,7 @@ class TestVerifiedAccount:
         color = "9EC41C"
         msg = "This is an automated test message. Color is #%s. Location is %f:%f. Time is %s. %s" % \
                 (color, lat, lng, datetime.datetime.now(), "".join(choice(ascii_lowercase) for _ in range(20)))
-        with open("testimg.png", "rb") as f:
+        with open("test/testimg.png", "rb") as f:
             imgdata = base64.b64encode(f.read()).decode("utf-8") + "".join(choice(ascii_lowercase) for _ in range(10))
         
         r = self.j.create_post(msg, b64img=imgdata, color=color, channel="WasGehtHeute?")
