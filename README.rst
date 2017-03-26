@@ -201,7 +201,9 @@ the API endpoints are still valid).
 
 Run the tests with
 
-``python setup.py test``
+.. code:: python
+
+    python setup.py test
 
 Rate-Limits
 -----------

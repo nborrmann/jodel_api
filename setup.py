@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(name='jodel_api',
-      version='1.0.2',
+      version='1.0.3',
       description='Unoffical Python Interface to the Jodel API Edit',
       url='https://github.com/nborrmann/jodel_api',
       author='Nils Borrmann',
