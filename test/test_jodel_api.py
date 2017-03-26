@@ -157,7 +157,7 @@ class TestUnverifiedAccount:
         assert requests_func.call_count == 1
 
 
-@pytest.mark.skipif(not os.environ.get("JODEL_ACCOUNT"), reason="Requires an account uid as environment variable")
+@pytest.mark.skipif(not os.environ.get("JODEL_ACCOUNT"), reason="requires an account uid as environment variable")
 class TestVerifiedAccount:
 
     @classmethod
@@ -182,14 +182,17 @@ class TestVerifiedAccount:
         out, err = capsys.readouterr()
         assert out == "Account is already verified.\n"
 
-    def test_notifications(self):
+    def test_notifications_read(self):
         assert self.j.get_notifications_new()[0] == 200
 
         r = self.j.get_notifications()
         assert r[0] == 200
         assert "notifications" in r[1]
-        nid = r[1]["notifications"][0]["notification_id"]
 
+        if not r[1]["notifications"]:
+            pytest.skip("no notifications returned, cannot mark as read")
+
+        nid = r[1]["notifications"][0]["notification_id"]
         assert self.j.notification_read(notification_id=nid)[0] == 204
         assert self.j.notification_read(post_id=self.pid1)[0] == 204
 
