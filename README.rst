@@ -105,7 +105,7 @@ respective responses):
 .. code:: python
 
     >>> j.set_location(lat, lng, city, country=None, name=None) # country and name appear to have no effect
-    >>> j.create_post(message=None, imgpath=None, color=None, ancestor=None, channel="")
+    >>> j.create_post(message=None, imgpath=None, b64img=None, color=None, ancestor=None, channel="")
     >>> j.get_post_details(post_id)
     >>> j.get_post_details_v3(post_id, skip=0) # This api endpoint implements paging and returns at most 50 replies, use the skip parameter to page through the thread. 
     >>> j.upvote(post_id)
@@ -126,6 +126,9 @@ respective responses):
     >>> j.unfollow_channel(channel)
     >>> j.get_user_config()
     >>> j.get_karma()
+    >>> j.get_captcha()
+    >>> j.submit_captcha(key, answer):
+
 
 The following calls can be used to read posts. The arguments ``mine``
 (boolean), ``hashtag``, ``channel`` (both strings) are exclusive. If
@@ -199,7 +202,7 @@ the API endpoints are still valid).
 
    If this variable is not present, these tests will be skipped.
 
-Run the tests with
+Clone the directory, install the library and run the tests with
 
 .. code:: python
 
