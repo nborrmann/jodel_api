@@ -57,7 +57,7 @@ class JodelAccount:
                    'Content-Type': 'application/json; charset=UTF-8',
                    'Authorization': 'Bearer ' + self.access_token if self.access_token else None}
 
-        for i in range(3):
+        for _ in range(3):
             self._sign_request(method, url, headers, params, payload)
             resp = s.request(method=method, url=url, params=params, json=payload, headers=headers, **kwargs)
             if resp.status_code != 502: # Retry on error 502 "Bad Gateway"
@@ -70,7 +70,7 @@ class JodelAccount:
 
         return resp.status_code, resp_text
 
-    def _sign_request(self, method, url, headers, params={}, payload=None):
+    def _sign_request(self, method, url, headers, params=None, payload=None):
         timestamp = datetime.datetime.utcnow().isoformat()[:-7] + "Z"
 
         req = [method,
