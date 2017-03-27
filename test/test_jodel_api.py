@@ -54,7 +54,7 @@ class TestUnverifiedAccount:
         assert self.j.get_my_replied_posts()[0] == 200
         assert self.j.get_my_pinned_posts()[0] == 200
 
-    def test_newsfeed(self):
+    def test_newsfeed_after(self):
         r = self.j.get_newsfeed()
         assert r[0] == 200
         assert 'posts' in r[1]
@@ -62,11 +62,14 @@ class TestUnverifiedAccount:
         if not r[1]['posts']:
             pytest.skip("newsfeed returned empty response")
 
-        r2 = self.j.get_newsfeed(after=r[1]['posts'][5]['post_id'])
+        print("after:", r[1]['posts'][10])
+        r2 = self.j.get_newsfeed(after=r[1]['posts'][10]['post_id'])
         assert r2[0] == 200
         assert 'posts' in r2[1]
+
         # did the after parameter work?
-        assert r[1]['posts'][6]['post_id'] == r2[1]['posts'][0]['post_id']
+        r2_create_times = [post["created_at"] for post in r2[1]["posts"]]
+        assert all([r[1]['posts'][10]["created_at"] > t for t in r2_create_times])
 
     def test_popular_after(self):
         r = self.j.get_posts_popular()
@@ -76,14 +79,16 @@ class TestUnverifiedAccount:
         if not r[1]['posts']:
             pytest.skip("posts_popular() returned no posts")
 
-        r2 = self.j.get_posts_popular(after=r[1]['posts'][0]['post_id'])
+        print("after:", r[1]['posts'][10])
+        r2 = self.j.get_posts_popular(after=r[1]['posts'][10]['post_id'])
         assert r2[0] == 200
         assert 'posts' in r2[1]
         if not r2[1]['posts']:
             pytest.skip("posts_popular(after=) returned no posts")
 
         # did the after parameter work?
-        assert r[1]['posts'][1]['post_id'] == r2[1]['posts'][0]['post_id']
+        r2_vote_counts = [post["vote_count"] for post in r2[1]["posts"]]
+        assert all([r[1]['posts'][10]["vote_count"] >= t for t in r2_vote_counts[1:]])
 
     def test_channel_after(self):
         r = self.j.get_posts_discussed(channel="selfies")
@@ -93,6 +98,7 @@ class TestUnverifiedAccount:
         if not r[1]['posts']:
             pytest.skip("posts_discussed(channel=selfies) returned no posts")
 
+        print("after:", r[1]['posts'][10])
         r2 = self.j.get_posts_discussed(channel="selfies", after=r[1]['posts'][10]['post_id'])
         assert r2[0] == 200
         assert 'posts' in r2[1]
@@ -100,7 +106,8 @@ class TestUnverifiedAccount:
             pytest.skip("posts_discussed(channel=selfies, after=) returned no posts")
 
         # did the after parameter work?
-        assert r[1]['posts'][11]['post_id'] == r2[1]['posts'][0]['post_id']
+        r2_child_counts = [post.get("child_count", 0) for post in r2[1]["posts"]]
+        assert all([r[1]['posts'][10]["child_count"] + 1 >= t for t in r2_child_counts[1:]])
 
     def test_get_posts_channel(self):
         r = self.j.get_posts_recent(channel="selfies")
@@ -256,11 +263,16 @@ class TestVerifiedAccount:
         if not r[1]['posts']:
             pytest.skip("my_pinned_posts() returned no posts")
 
-        r2 = self.j.get_my_pinned_posts(after=r[1]['posts'][0]['post_id'])
+        print("after:", r[1]['posts'][3])
+        r2 = self.j.get_my_pinned_posts(after=r[1]['posts'][3]['post_id'])
         assert r2[0] == 200
         assert 'posts' in r2[1]
+        if not r2[1]['posts']:
+            pytest.skip("my_pinned_posts(after=) returned no posts")
+
         # did the after parameter work?
-        assert r[1]['posts'][1]['post_id'] == r2[1]['posts'][0]['post_id']
+        r2_create_times = [post["created_at"] for post in r2[1]["posts"]]
+        assert all([r[1]['posts'][3]["created_at"] > t for t in r2_create_times])
 
     @pytest.mark.xfail(reason="after parameter doesn't work with /mine/ endpoints")
     def test_my_voted_after(self):
@@ -269,16 +281,18 @@ class TestVerifiedAccount:
         assert 'posts' in r[1]
 
         if not r[1]['posts']:
-            pytest.skip("my_pinned_posts() returned no posts")
+            pytest.skip("my_voted_posts() returned no posts")
 
-        r2 = self.j.get_my_voted_posts(after=r[1]['posts'][0]['post_id'])
+        print("after:", r[1]['posts'][3])
+        r2 = self.j.get_my_voted_posts(after=r[1]['posts'][3]['post_id'])
         assert r2[0] == 200
         assert 'posts' in r2[1]
         if not r2[1]['posts']:
-            pytest.skip("my_pinned_posts(after=) returned no posts")
+            pytest.skip("my_voted_posts(after=) returned no posts")
 
         # did the after parameter work?
-        assert r[1]['posts'][1]['post_id'] == r2[1]['posts'][0]['post_id']
+        r2_create_times = [post["created_at"] for post in r2[1]["posts"]]
+        assert all([r[1]['posts'][3]["created_at"] > t for t in r2_create_times])
 
     def test_notifications_read(self):
         assert self.j.get_notifications_new()[0] == 200
