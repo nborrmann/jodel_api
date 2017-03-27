@@ -1,3 +1,10 @@
+# -*- coding: utf-8 -*-
+
+from __future__ import (absolute_import, print_function, unicode_literals)
+from builtins import input
+from future.standard_library import install_aliases
+install_aliases()
+
 import base64
 import datetime
 import hmac
@@ -133,7 +140,7 @@ class JodelAccount:
                 raise Exception(str(r[1]))
 
             print(r[1]['image_url'])
-            answer = input("Open the url above in a browser and enter the images containing a racoon (left to right, starting with 0) separated by spaces: ")
+            answer = obtain_input("Open the url above in a browser and enter the images containing a racoon (left to right, starting with 0) separated by spaces: ")
             
             try:
                 answer = [int(i) for i in answer.split(' ')]
@@ -272,3 +279,6 @@ class JodelAccount:
         payload = {'key':key, 'answer':answer}
         return self._send_request("POST", "/v3/user/verification/imageCaptcha", payload=payload, **kwargs)
 
+# helper function to mock input
+def obtain_input(text):
+    return input(text)
