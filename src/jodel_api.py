@@ -197,12 +197,39 @@ class JodelAccount:
     def get_post_details_v3(self, message_id, skip=0, **kwargs):
         return self._send_request("GET", '/v3/posts/%s/details' % message_id, params={'details': 'true', 'reply': skip}, **kwargs)
 
-    def _get_posts(self, post_types="", skip=0, limit=60, mine=False, hashtag="", channel="", **kwargs):
+    def _get_posts(self, post_types="", skip=0, limit=60, after="", mine=False, hashtag="", channel="", **kwargs):
         category = "mine" if mine else "hashtag" if hashtag else "channel" if channel else "location"
-        params = {"lat": self.lat, "lng": self.lng, "skip": skip, "limit": limit, "hashtag": hashtag, "channel": channel}
+        params = {"lat": self.lat,
+                  "lng": self.lng,
+                  "skip": skip,
+                  "limit": limit,
+                  "hashtag": hashtag,
+                  "channel": channel,
+                  "after": after}
         url = "/v%s/posts/%s/%s" % ("2" if not (hashtag or channel) else "3", category, post_types)
 
         return self._send_request("GET", url, params=params, **kwargs)
+
+    def get_posts_recent(self, skip=0, limit=60, after="", mine=False, hashtag="", channel="", **kwargs):
+        return self._get_posts('', skip, limit, after, mine, hashtag, channel, **kwargs)
+
+    def get_posts_popular(self, skip=0, limit=60, after="", mine=False, hashtag="", channel="", **kwargs):
+        return self._get_posts('popular', skip, limit, after, mine, hashtag, channel, **kwargs)
+
+    def get_posts_discussed(self, skip=0, limit=60, after="", mine=False, hashtag="", channel="", **kwargs):
+        return self._get_posts('discussed', skip, limit, after, mine, hashtag, channel, **kwargs)
+
+    def get_my_pinned_posts(self, skip=0, limit=60, after="", **kwargs):
+        return self._get_posts('pinned', skip, limit, after, True, **kwargs)
+
+    def get_my_replied_posts(self, skip=0, limit=60, after="", **kwargs):
+        return self._get_posts('replies', skip, limit, after, True, **kwargs)
+
+    def get_my_voted_posts(self, skip=0, limit=60, after="", **kwargs):
+        return self._get_posts('votes', skip, limit, after, True, **kwargs)
+
+    def get_newsfeed(self, after=""):
+        return self._send_request('GET', '/v3/posts/newsfeed', params={'after': after})
 
     def get_share_url(self, post_id, **kwargs):
         return self._send_request("POST", "/v3/posts/%s/share" % post_id, **kwargs)
@@ -232,24 +259,6 @@ class JodelAccount:
 
     def disable_notifications(self, post_id, **kwargs):
         return self._send_request("PUT", "/v2/posts/%s/notifications/disable" % post_id, **kwargs)
-
-    def get_posts_recent(self, skip=0, limit=60, mine=False, hashtag="", channel="", **kwargs):
-        return self._get_posts('', skip, limit, mine, hashtag, channel, **kwargs)
-
-    def get_posts_popular(self, skip=0, limit=60, mine=False, hashtag="", channel="", **kwargs):
-        return self._get_posts('popular', skip, limit, mine, hashtag, channel, **kwargs)
-
-    def get_posts_discussed(self, skip=0, limit=60, mine=False, hashtag="", channel="", **kwargs):
-        return self._get_posts('discussed', skip, limit, mine, hashtag, channel, **kwargs)
-
-    def get_my_pinned_posts(self, skip=0, limit=60, **kwargs):
-        return self._get_posts('pinned', skip, limit, True, **kwargs)
-
-    def get_my_replied_posts(self, skip=0, limit=60, **kwargs):
-        return self._get_posts('replies', skip, limit, True, **kwargs)
-
-    def get_my_voted_posts(self, skip=0, limit=60, **kwargs):
-        return self._get_posts('votes', skip, limit, True, **kwargs)
 
     def get_recommended_channels(self, **kwargs):
         return self._send_request("GET", "/v3/user/recommendedChannels", **kwargs)

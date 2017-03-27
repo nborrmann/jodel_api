@@ -49,14 +49,58 @@ class TestUnverifiedAccount:
         r = self.j.get_posts_recent()
         assert r[0] == 200
 
-    def test_get_posts_popular(self):
-        r = self.j.get_posts_popular()
-        assert r[0] == 200
-
     def test_get_my_posts(self):
         assert self.j.get_my_voted_posts()[0] == 200
         assert self.j.get_my_replied_posts()[0] == 200
         assert self.j.get_my_pinned_posts()[0] == 200
+
+    def test_newsfeed(self):
+        r = self.j.get_newsfeed()
+        assert r[0] == 200
+        assert 'posts' in r[1]
+
+        if not r[1]['posts']:
+            pytest.skip("newsfeed returned empty response")
+
+        r2 = self.j.get_newsfeed(after=r[1]['posts'][5]['post_id'])
+        assert r2[0] == 200
+        assert 'posts' in r2[1]
+        # did the after parameter work?
+        assert r[1]['posts'][6]['post_id'] == r2[1]['posts'][0]['post_id']
+
+    def test_popular_after(self):
+        r = self.j.get_posts_popular()
+        assert r[0] == 200
+        assert 'posts' in r[1]
+
+        if not r[1]['posts']:
+            pytest.skip("posts_popular() returned no posts")
+
+        r2 = self.j.get_posts_popular(after=r[1]['posts'][0]['post_id'])
+        assert r2[0] == 200
+        assert 'posts' in r2[1]
+        if not r2[1]['posts']:
+            pytest.skip("posts_popular(after=) returned no posts")
+
+        # did the after parameter work?
+        assert r[1]['posts'][1]['post_id'] == r2[1]['posts'][0]['post_id']
+
+    def test_channel_after(self):
+        r = self.j.get_posts_discussed(channel="selfies")
+        assert r[0] == 200
+        assert 'posts' in r[1]
+
+        if not r[1]['posts']:
+            pytest.skip("posts_discussed(channel=selfies) returned no posts")
+
+        r2 = self.j.get_posts_discussed(channel="selfies", after=r[1]['posts'][10]['post_id'])
+        assert r2[0] == 200
+        assert 'posts' in r2[1]
+        if not r2[1]['posts']:
+            pytest.skip("posts_discussed(channel=selfies, after=) returned no posts")
+
+        # did the after parameter work?
+        assert r[1]['posts'][11]['post_id'] == r2[1]['posts'][0]['post_id']
 
     def test_get_posts_channel(self):
         r = self.j.get_posts_recent(channel="selfies")
@@ -177,6 +221,7 @@ class TestVerifiedAccount:
         r = self.j.refresh_all_tokens()
         assert r[0] == 200
 
+        # get two post_ids for further testing
         r = self.j.get_posts_discussed()
         assert r[0] == 200
         assert "posts" in r[1] and "post_id" in r[1]["posts"][0]
@@ -184,6 +229,14 @@ class TestVerifiedAccount:
         self.pid2 = r[1]['posts'][1]['post_id']
         print(self.pid1, self.pid2)
 
+        # make sure get_my_pinned() isn't empty
+        pinned = self.j.get_my_pinned_posts()
+        assert pinned[0] == 200
+        if len(pinned[1]["posts"]) < 5:
+            for post in r[1]["posts"][4:9]:
+                self.j.pin(post["post_id"])
+
+        # follow the channel so we can post to it
         assert self.j.follow_channel("WasGehtHeute?")[0] == 204
 
     def __repr__(self):
@@ -193,6 +246,39 @@ class TestVerifiedAccount:
         self.j.verify_account()
         out, err = capsys.readouterr()
         assert out == "Account is already verified.\n"
+
+    @pytest.mark.xfail(reason="after parameter doesn't work with /mine/ endpoints")
+    def test_my_pin_after(self):
+        r = self.j.get_my_pinned_posts()
+        assert r[0] == 200
+        assert 'posts' in r[1]
+
+        if not r[1]['posts']:
+            pytest.skip("my_pinned_posts() returned no posts")
+
+        r2 = self.j.get_my_pinned_posts(after=r[1]['posts'][0]['post_id'])
+        assert r2[0] == 200
+        assert 'posts' in r2[1]
+        # did the after parameter work?
+        assert r[1]['posts'][1]['post_id'] == r2[1]['posts'][0]['post_id']
+
+    @pytest.mark.xfail(reason="after parameter doesn't work with /mine/ endpoints")
+    def test_my_voted_after(self):
+        r = self.j.get_my_voted_posts()
+        assert r[0] == 200
+        assert 'posts' in r[1]
+
+        if not r[1]['posts']:
+            pytest.skip("my_pinned_posts() returned no posts")
+
+        r2 = self.j.get_my_voted_posts(after=r[1]['posts'][0]['post_id'])
+        assert r2[0] == 200
+        assert 'posts' in r2[1]
+        if not r2[1]['posts']:
+            pytest.skip("my_pinned_posts(after=) returned no posts")
+
+        # did the after parameter work?
+        assert r[1]['posts'][1]['post_id'] == r2[1]['posts'][0]['post_id']
 
     def test_notifications_read(self):
         assert self.j.get_notifications_new()[0] == 200

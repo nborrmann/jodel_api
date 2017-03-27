@@ -90,7 +90,8 @@ but preserves the account's data (karma, etc)):
     >>> j.refresh_access_token()
     (200, {'token_type': 'bearer', 'access_token': 'xxx', 'expires_in': 604800, 'expiration_date': xxx})
     >>> j.refresh_all_tokens()
-    (200, {'expires_in': 604800, 'access_token': 'xxx', 'token_type': 'bearer', 'returning': True, 'refresh_token': 'xxx', 'expiration_date': 1472600000, 'distinct_id': 'xxx'})
+    (200, {'expires_in': 604800, 'access_token': 'xxx', 'token_type': 'bearer', 'returning': True,
+           'refresh_token': 'xxx', 'expiration_date': 1472600000, 'distinct_id': 'xxx'})
 
 API calls
 ~~~~~~~~~
@@ -107,7 +108,8 @@ respective responses):
     >>> j.set_location(lat, lng, city, country=None, name=None) # country and name appear to have no effect
     >>> j.create_post(message=None, imgpath=None, b64img=None, color=None, ancestor=None, channel="")
     >>> j.get_post_details(post_id)
-    >>> j.get_post_details_v3(post_id, skip=0) # This api endpoint implements paging and returns at most 50 replies, use the skip parameter to page through the thread. 
+    # This api endpoint implements paging and returns at most 50 replies, use the skip parameter to page through the thread. 
+    >>> j.get_post_details_v3(post_id, skip=0) 
     >>> j.upvote(post_id)
     >>> j.downvote(post_id)
     >>> j.pin(post_id)
@@ -130,19 +132,31 @@ respective responses):
     >>> j.submit_captcha(key, answer):
 
 
-The following calls can be used to read posts. The arguments ``mine``
-(boolean), ``hashtag``, ``channel`` (both strings) are exclusive. If
+The following calls can be used to read posts. The parameters ``skip``,
+``limit`` and ``after`` implement paging. While ``skip`` and ``limit``
+are integers, ``after`` is a ``post_id`` parameter and will return all
+jodels that follow that one. The former two paramters seem to be 
+deprecated in favor of the latter, however ``after`` doesn't work
+on all ``/mine/`` endpoints (ie. ``mine=True`` or ``get_my_x_posts``). 
+
+The arguments ``mine`` (boolean), ``hashtag``, ``channel`` (both strings) are exclusive. If
 ``mine`` evaluates to ``true``, the other two arguments are discarded,
 if ``hashtag`` evaluates ``true`` , ``channel`` is discarded.
 
+``get_newsfeed()`` is a new endpoint (as of March 17) that isn't yet
+available through the app. It returns all popular (upvotes/comments) 
+Jodels from a larger timeframe than the usual ``get_posts()`` methods
+can access. 
+
 .. code:: python
 
-    >>> j.get_posts_recent(skip=0, limit=60, mine=False, hashtag="", channel="")
-    >>> j.get_posts_popular(skip=0, limit=60, mine=False, hashtag="", channel="")
-    >>> j.get_posts_discussed(skip=0, limit=60, mine=False, hashtag="", channel="")
-    >>> j.get_my_pinned_posts(skip=0, limit=60)
-    >>> j.get_my_replied_posts(skip=0, limit=60)
-    >>> j.get_my_voted_posts(skip=0, limit=60)
+    >>> j.get_posts_recent(skip=0, limit=60, after="", mine=False, hashtag="", channel="")
+    >>> j.get_posts_popular(skip=0, limit=60, after="", mine=False, hashtag="", channel="")
+    >>> j.get_posts_discussed(skip=0, limit=60, after="", mine=False, hashtag="", channel="")
+    >>> j.get_my_pinned_posts(skip=0, limit=60, after="")
+    >>> j.get_my_replied_posts(skip=0, limit=60, after="")
+    >>> j.get_my_voted_posts(skip=0, limit=60, after="")
+    >>> j.get_newsfeed(after="")
 
 You can pass additional arguments (such as proxies and timeouts) to all
 API calls through the ``**xargs`` argument that will be passed to the
