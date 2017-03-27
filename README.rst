@@ -129,7 +129,7 @@ respective responses):
     >>> j.get_user_config()
     >>> j.get_karma()
     >>> j.get_captcha()
-    >>> j.submit_captcha(key, answer):
+    >>> j.submit_captcha(key, answer)
 
 
 The following calls can be used to read posts. The parameters ``skip``,
