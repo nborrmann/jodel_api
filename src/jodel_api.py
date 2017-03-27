@@ -23,7 +23,7 @@ class JodelAccount:
     api_url = "https://api.go-tellm.com/api%s"
     client_id = '81e8a76e-1e02-4d17-9ba0-8a7020261b26'
     secret = 'KZmLMUggDeMzQfqMNYFLWNyttEmQgClvlPyACVlH'.encode('ascii')
-    version = 'android_4.38.3'
+    version = '4.38.3'
 
     access_token = None
     device_uid = None
@@ -52,7 +52,7 @@ class JodelAccount:
 
     def _send_request(self, method, endpoint, params=None, payload=None, **kwargs):
         url = self.api_url % endpoint
-        headers = {'User-Agent': 'Jodel/4.4.9 Dalvik/2.1.0 (Linux; U; Android 5.1.1; )',
+        headers = {'User-Agent': 'Jodel/%s Dalvik/2.1.0 (Linux; U; Android 5.1.1; )' % self.version,
                    'Accept-Encoding': 'gzip',
                    'Content-Type': 'application/json; charset=UTF-8',
                    'Authorization': 'Bearer ' + self.access_token if self.access_token else None}
@@ -85,7 +85,7 @@ class JodelAccount:
         signature = hmac.new(self.secret, "%".join(req).encode("utf-8"), sha1).hexdigest().upper()
 
         headers['X-Authorization'] = 'HMAC ' + signature
-        headers['X-Client-Type'] = self.version
+        headers['X-Client-Type'] = 'android_%s' % self.version
         headers['X-Timestamp'] = timestamp
         headers['X-Api-Version'] = '0.2'
 
