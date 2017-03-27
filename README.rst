@@ -1,7 +1,7 @@
 Jodel API
 =========
 
-|Build Status| |Coverage Status| |Python Versions| |PyPI Version| |License|
+|Build Status| |Coverage Status| |Health| |Python Versions| |PyPI Version| |License|
 
 Inofficial interface to the private API of the Jodel App. Not affiliated
 with *The Jodel Venture GmbH*.
@@ -237,6 +237,8 @@ They also hand out perma-bans if you overdo it.
    :target: https://travis-ci.org/nborrmann/jodel_api
 .. |Coverage Status| image:: https://img.shields.io/codecov/c/github/nborrmann/jodel_api.svg
    :target: https://codecov.io/gh/nborrmann/jodel_api
+.. |Health| image:: https://landscape.io/github/nborrmann/jodel_api/master/landscape.svg?style=flat
+   :target: https://landscape.io/github/nborrmann/jodel_api/master
 .. |Python Versions| image:: https://img.shields.io/pypi/pyversions/jodel_api.svg
    :target: https://pypi.python.org/pypi/jodel_api/
 .. |PyPI Version| image:: https://img.shields.io/pypi/v/jodel_api.svg
