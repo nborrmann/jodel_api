@@ -4,9 +4,11 @@ python:
   - 3.3
 install:
   - pip install codecov
+  - pip install docutils
   - python setup.py -q install
 script:
-  coverage run --branch --source=jodel_api -m pytest -v -l
+  - coverage run --branch --source=jodel_api -m pytest -v -l
+  - python setup.py check --restructuredtext --metadata --strict
 after_success:
   codecov
 deploy:
