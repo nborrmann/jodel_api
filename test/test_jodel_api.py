@@ -26,6 +26,9 @@ class TestUnverifiedAccount:
         assert "posts" in r[1] and "post_id" in r[1]["posts"][0]
         self.pid = r[1]['posts'][0]['post_id']
 
+    def __repr__(self):
+        return "TestUnverifiedAccount <%s, %s>" % (self.j.get_account_data()['device_uid'], self.pid)
+
     def test_reinitalize(self):
         acc = self.j.get_account_data()
         with pytest.raises(Exception) as excinfo:
@@ -74,6 +77,7 @@ class TestUnverifiedAccount:
 
     def test_get_config(self):
         r = self.j.get_user_config()
+        print(r)
         assert r[0] == 200
         assert "verified" in r[1]
 
@@ -85,6 +89,7 @@ class TestUnverifiedAccount:
 
     def test_captcha(self):
         r = self.j.get_captcha()
+        print(r)
         assert r[0] == 200
         assert "image_url" in r[1]
         assert "key" in r[1]
@@ -177,8 +182,12 @@ class TestVerifiedAccount:
         assert "posts" in r[1] and "post_id" in r[1]["posts"][0]
         self.pid1 = r[1]['posts'][0]['post_id']
         self.pid2 = r[1]['posts'][1]['post_id']
+        print(self.pid1, self.pid2)
 
         assert self.j.follow_channel("WasGehtHeute?")[0] == 204
+
+    def __repr__(self):
+        return "TestUnverifiedAccount <%s, %s>" % (self.pid1, self.pid2)
 
     def test_verify(self, capsys):
         self.j.verify_account()
@@ -189,6 +198,7 @@ class TestVerifiedAccount:
         assert self.j.get_notifications_new()[0] == 200
 
         r = self.j.get_notifications()
+        print(r)
         assert r[0] == 200
         assert "notifications" in r[1]
 
@@ -226,7 +236,8 @@ class TestVerifiedAccount:
         p = self.j.get_post_details(self.pid1)
         assert p[0] == 200
         assert "children" in p[1]
-
+        print([post["post_id"] for post in p[1]["children"]])
+        assert r[1]["post_id"] in [post["post_id"] for post in p[1]["children"]]
         my_post = next(post for post in p[1]["children"] if post["post_id"] == r[1]["post_id"])
         assert my_post["message"] == msg
 
@@ -245,6 +256,7 @@ class TestVerifiedAccount:
 
         p = self.j.get_posts_recent(channel=channel)
         assert p[0] == 200
+        print([post["post_id"] for post in p[1]["posts"]])
         assert r[1]["post_id"] in [post["post_id"] for post in p[1]["posts"]]
         my_post = next(post for post in p[1]["posts"] if post["post_id"] == r[1]["post_id"])
         assert my_post["message"] == msg
