@@ -1,7 +1,7 @@
 Jodel API
 =========
 
-|Build Status| |Coverage Status| |Python Versions| |PyPI Version| |License|
+|Build Status| |Coverage Status| |Health| |Python Versions| |PyPI Version| |License|
 
 Inofficial interface to the private API of the Jodel App. Not affiliated
 with *The Jodel Venture GmbH*.
@@ -90,7 +90,8 @@ but preserves the account's data (karma, etc)):
     >>> j.refresh_access_token()
     (200, {'token_type': 'bearer', 'access_token': 'xxx', 'expires_in': 604800, 'expiration_date': xxx})
     >>> j.refresh_all_tokens()
-    (200, {'expires_in': 604800, 'access_token': 'xxx', 'token_type': 'bearer', 'returning': True, 'refresh_token': 'xxx', 'expiration_date': 1472600000, 'distinct_id': 'xxx'})
+    (200, {'expires_in': 604800, 'access_token': 'xxx', 'token_type': 'bearer', 'returning': True,
+           'refresh_token': 'xxx', 'expiration_date': 1472600000, 'distinct_id': 'xxx'})
 
 API calls
 ~~~~~~~~~
@@ -105,9 +106,10 @@ respective responses):
 .. code:: python
 
     >>> j.set_location(lat, lng, city, country=None, name=None) # country and name appear to have no effect
-    >>> j.create_post(message=None, imgpath=None, color=None, ancestor=None, channel="")
+    >>> j.create_post(message=None, imgpath=None, b64img=None, color=None, ancestor=None, channel="")
     >>> j.get_post_details(post_id)
-    >>> j.get_post_details_v3(post_id, skip=0) # This api endpoint implements paging and returns at most 50 replies, use the skip parameter to page through the thread. 
+    # This api endpoint implements paging and returns at most 50 replies, use the skip parameter to page through the thread. 
+    >>> j.get_post_details_v3(post_id, skip=0) 
     >>> j.upvote(post_id)
     >>> j.downvote(post_id)
     >>> j.pin(post_id)
@@ -126,20 +128,35 @@ respective responses):
     >>> j.unfollow_channel(channel)
     >>> j.get_user_config()
     >>> j.get_karma()
+    >>> j.get_captcha()
+    >>> j.submit_captcha(key, answer):
 
-The following calls can be used to read posts. The arguments ``mine``
-(boolean), ``hashtag``, ``channel`` (both strings) are exclusive. If
+
+The following calls can be used to read posts. The parameters ``skip``,
+``limit`` and ``after`` implement paging. While ``skip`` and ``limit``
+are integers, ``after`` is a ``post_id`` parameter and will return all
+jodels that follow that one. The former two paramters seem to be 
+deprecated in favor of the latter, however ``after`` doesn't work
+on all ``/mine/`` endpoints (ie. ``mine=True`` or ``get_my_x_posts``). 
+
+The arguments ``mine`` (boolean), ``hashtag``, ``channel`` (both strings) are exclusive. If
 ``mine`` evaluates to ``true``, the other two arguments are discarded,
 if ``hashtag`` evaluates ``true`` , ``channel`` is discarded.
 
+``get_newsfeed()`` is a new endpoint (as of March 17) that isn't yet
+available through the app. It returns all popular (upvotes/comments) 
+Jodels from a larger timeframe than the usual ``get_posts()`` methods
+can access. 
+
 .. code:: python
 
-    >>> j.get_posts_recent(skip=0, limit=60, mine=False, hashtag="", channel="")
-    >>> j.get_posts_popular(skip=0, limit=60, mine=False, hashtag="", channel="")
-    >>> j.get_posts_discussed(skip=0, limit=60, mine=False, hashtag="", channel="")
-    >>> j.get_my_pinned_posts(skip=0, limit=60)
-    >>> j.get_my_replied_posts(skip=0, limit=60)
-    >>> j.get_my_voted_posts(skip=0, limit=60)
+    >>> j.get_posts_recent(skip=0, limit=60, after="", mine=False, hashtag="", channel="")
+    >>> j.get_posts_popular(skip=0, limit=60, after="", mine=False, hashtag="", channel="")
+    >>> j.get_posts_discussed(skip=0, limit=60, after="", mine=False, hashtag="", channel="")
+    >>> j.get_my_pinned_posts(skip=0, limit=60, after="")
+    >>> j.get_my_replied_posts(skip=0, limit=60, after="")
+    >>> j.get_my_voted_posts(skip=0, limit=60, after="")
+    >>> j.get_newsfeed(after="")
 
 You can pass additional arguments (such as proxies and timeouts) to all
 API calls through the ``**xargs`` argument that will be passed to the
@@ -199,7 +216,7 @@ the API endpoints are still valid).
 
    If this variable is not present, these tests will be skipped.
 
-Run the tests with
+Clone the directory, install the library and run the tests with
 
 .. code:: python
 
@@ -220,6 +237,8 @@ They also hand out perma-bans if you overdo it.
    :target: https://travis-ci.org/nborrmann/jodel_api
 .. |Coverage Status| image:: https://img.shields.io/codecov/c/github/nborrmann/jodel_api.svg
    :target: https://codecov.io/gh/nborrmann/jodel_api
+.. |Health| image:: https://landscape.io/github/nborrmann/jodel_api/master/landscape.svg?style=flat
+   :target: https://landscape.io/github/nborrmann/jodel_api/master
 .. |Python Versions| image:: https://img.shields.io/pypi/pyversions/jodel_api.svg
    :target: https://pypi.python.org/pypi/jodel_api/
 .. |PyPI Version| image:: https://img.shields.io/pypi/v/jodel_api.svg

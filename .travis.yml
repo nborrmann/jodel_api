@@ -1,12 +1,12 @@
 language: python
 python:
-  - 3.4
+  - 2.7
+  - 3.3
 install:
-  - pip install requests
   - pip install codecov
   - python setup.py -q install
 script:
-  coverage run --branch --source=jodel_api -m pytest -v
+  - coverage run --branch --source=jodel_api -m pytest -v -l -ra
 after_success:
   codecov
 deploy:

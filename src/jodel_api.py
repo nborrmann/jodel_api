@@ -1,3 +1,10 @@
+# -*- coding: utf-8 -*-
+
+from __future__ import (absolute_import, print_function, unicode_literals)
+from builtins import input
+from future.standard_library import install_aliases
+install_aliases()
+
 import base64
 import datetime
 import hmac
@@ -15,8 +22,8 @@ class JodelAccount:
 
     api_url = "https://api.go-tellm.com/api%s"
     client_id = '81e8a76e-1e02-4d17-9ba0-8a7020261b26'
-    secret = bytearray([ord(c) for c in "OjZvbmHjcGoPhz6OfjIeDRzLXOFjMdJmAIplM7Gq"])
-    version = 'android_4.37.2'
+    secret = 'KZmLMUggDeMzQfqMNYFLWNyttEmQgClvlPyACVlH'.encode('ascii')
+    version = '4.38.3'
 
     access_token = None
     device_uid = None
@@ -45,12 +52,12 @@ class JodelAccount:
 
     def _send_request(self, method, endpoint, params=None, payload=None, **kwargs):
         url = self.api_url % endpoint
-        headers = {'User-Agent': 'Jodel/4.4.9 Dalvik/2.1.0 (Linux; U; Android 5.1.1; )',
+        headers = {'User-Agent': 'Jodel/%s Dalvik/2.1.0 (Linux; U; Android 5.1.1; )' % self.version,
                    'Accept-Encoding': 'gzip',
                    'Content-Type': 'application/json; charset=UTF-8',
                    'Authorization': 'Bearer ' + self.access_token if self.access_token else None}
 
-        for i in range(3):
+        for _ in range(3):
             self._sign_request(method, url, headers, params, payload)
             resp = s.request(method=method, url=url, params=params, json=payload, headers=headers, **kwargs)
             if resp.status_code != 502: # Retry on error 502 "Bad Gateway"
@@ -63,7 +70,7 @@ class JodelAccount:
 
         return resp.status_code, resp_text
 
-    def _sign_request(self, method, url, headers, params={}, payload=None):
+    def _sign_request(self, method, url, headers, params=None, payload=None):
         timestamp = datetime.datetime.utcnow().isoformat()[:-7] + "Z"
 
         req = [method,
@@ -78,7 +85,7 @@ class JodelAccount:
         signature = hmac.new(self.secret, "%".join(req).encode("utf-8"), sha1).hexdigest().upper()
 
         headers['X-Authorization'] = 'HMAC ' + signature
-        headers['X-Client-Type'] = self.version
+        headers['X-Client-Type'] = 'android_%s' % self.version
         headers['X-Timestamp'] = timestamp
         headers['X-Api-Version'] = '0.2'
 
@@ -133,7 +140,7 @@ class JodelAccount:
                 raise Exception(str(r[1]))
 
             print(r[1]['image_url'])
-            answer = input("Open the url above in a browser and enter the images containing a racoon (left to right, starting with 0) separated by spaces: ")
+            answer = obtain_input("Open the url above in a browser and enter the images containing a racoon (left to right, starting with 0) separated by spaces: ")
             
             try:
                 answer = [int(i) for i in answer.split(' ')]
@@ -190,12 +197,39 @@ class JodelAccount:
     def get_post_details_v3(self, message_id, skip=0, **kwargs):
         return self._send_request("GET", '/v3/posts/%s/details' % message_id, params={'details': 'true', 'reply': skip}, **kwargs)
 
-    def _get_posts(self, post_types="", skip=0, limit=60, mine=False, hashtag="", channel="", **kwargs):
+    def _get_posts(self, post_types="", skip=0, limit=60, after="", mine=False, hashtag="", channel="", **kwargs):
         category = "mine" if mine else "hashtag" if hashtag else "channel" if channel else "location"
-        params = {"lat": self.lat, "lng": self.lng, "skip": skip, "limit": limit, "hashtag": hashtag, "channel": channel}
+        params = {"lat": self.lat,
+                  "lng": self.lng,
+                  "skip": skip,
+                  "limit": limit,
+                  "hashtag": hashtag,
+                  "channel": channel,
+                  "after": after}
         url = "/v%s/posts/%s/%s" % ("2" if not (hashtag or channel) else "3", category, post_types)
 
         return self._send_request("GET", url, params=params, **kwargs)
+
+    def get_posts_recent(self, skip=0, limit=60, after="", mine=False, hashtag="", channel="", **kwargs):
+        return self._get_posts('', skip, limit, after, mine, hashtag, channel, **kwargs)
+
+    def get_posts_popular(self, skip=0, limit=60, after="", mine=False, hashtag="", channel="", **kwargs):
+        return self._get_posts('popular', skip, limit, after, mine, hashtag, channel, **kwargs)
+
+    def get_posts_discussed(self, skip=0, limit=60, after="", mine=False, hashtag="", channel="", **kwargs):
+        return self._get_posts('discussed', skip, limit, after, mine, hashtag, channel, **kwargs)
+
+    def get_my_pinned_posts(self, skip=0, limit=60, after="", **kwargs):
+        return self._get_posts('pinned', skip, limit, after, True, **kwargs)
+
+    def get_my_replied_posts(self, skip=0, limit=60, after="", **kwargs):
+        return self._get_posts('replies', skip, limit, after, True, **kwargs)
+
+    def get_my_voted_posts(self, skip=0, limit=60, after="", **kwargs):
+        return self._get_posts('votes', skip, limit, after, True, **kwargs)
+
+    def get_newsfeed(self, after=""):
+        return self._send_request('GET', '/v3/posts/newsfeed', params={'after': after})
 
     def get_share_url(self, post_id, **kwargs):
         return self._send_request("POST", "/v3/posts/%s/share" % post_id, **kwargs)
@@ -226,24 +260,6 @@ class JodelAccount:
     def disable_notifications(self, post_id, **kwargs):
         return self._send_request("PUT", "/v2/posts/%s/notifications/disable" % post_id, **kwargs)
 
-    def get_posts_recent(self, skip=0, limit=60, mine=False, hashtag="", channel="", **kwargs):
-        return self._get_posts('', skip, limit, mine, hashtag, channel, **kwargs)
-
-    def get_posts_popular(self, skip=0, limit=60, mine=False, hashtag="", channel="", **kwargs):
-        return self._get_posts('popular', skip, limit, mine, hashtag, channel, **kwargs)
-
-    def get_posts_discussed(self, skip=0, limit=60, mine=False, hashtag="", channel="", **kwargs):
-        return self._get_posts('discussed', skip, limit, mine, hashtag, channel, **kwargs)
-
-    def get_my_pinned_posts(self, skip=0, limit=60, **kwargs):
-        return self._get_posts('pinned', skip, limit, True, **kwargs)
-
-    def get_my_replied_posts(self, skip=0, limit=60, **kwargs):
-        return self._get_posts('replies', skip, limit, True, **kwargs)
-
-    def get_my_voted_posts(self, skip=0, limit=60, **kwargs):
-        return self._get_posts('votes', skip, limit, True, **kwargs)
-
     def get_recommended_channels(self, **kwargs):
         return self._send_request("GET", "/v3/user/recommendedChannels", **kwargs)
 
@@ -272,3 +288,6 @@ class JodelAccount:
         payload = {'key':key, 'answer':answer}
         return self._send_request("POST", "/v3/user/verification/imageCaptcha", payload=payload, **kwargs)
 
+# helper function to mock input
+def obtain_input(text):
+    return input(text)

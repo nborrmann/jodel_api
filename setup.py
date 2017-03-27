@@ -1,8 +1,13 @@
 from setuptools import setup, find_packages
+import os
+
+with open(os.path.join(os.path.dirname(__file__), 'README.rst')) as f:
+    long_description = f.read()
 
 setup(name='jodel_api',
-      version='1.0.3',
+      version='1.1.0',
       description='Unoffical Python Interface to the Jodel API Edit',
+      long_description=long_description,
       url='https://github.com/nborrmann/jodel_api',
       author='Nils Borrmann',
       author_email='n.borrmann@googlemail.com',
@@ -11,6 +16,8 @@ setup(name='jodel_api',
         'Development Status :: 5 - Production/Stable',
         'License :: OSI Approved :: MIT License',
         'Intended Audience :: Developers',
+        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
@@ -20,7 +27,7 @@ setup(name='jodel_api',
         'Topic :: Software Development :: Libraries :: Python Modules',
       ],
       keywords='jodel',
-      install_requires=['requests'],
+      install_requires=['requests', 'future', 'mock'],
       package_dir={'': 'src'},
       py_modules=['jodel_api'],
       setup_requires=['pytest-runner', ],
