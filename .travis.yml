@@ -4,6 +4,7 @@ python:
   - 3.3
 install:
   - pip install codecov
+  - pip install flaky
   - python setup.py -q install
 script:
   - coverage run --branch --source=jodel_api -m pytest -v -l -ra --no-success-flaky-report
