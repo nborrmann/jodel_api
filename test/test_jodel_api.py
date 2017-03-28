@@ -14,11 +14,13 @@ import os
 from flaky import flaky
 import time
 
-lat, lng, city = 48.144378, 11.573044, "Munich"
+lat, lng, city = 49.021785, 12.103129, "Regensburg"
+test_channel = "WasGehtHeute?"
 
 def delay_rerun(*args):
     time.sleep(3)
     return True
+
 
 @flaky(max_runs=2, rerun_filter=delay_rerun)
 class TestUnverifiedAccount:
@@ -98,26 +100,26 @@ class TestUnverifiedAccount:
         assert all([r[1]['posts'][10]["vote_count"] >= t for t in r2_vote_counts[1:]])
 
     def test_channel_after(self):
-        r = self.j.get_posts_discussed(channel="selfies")
+        r = self.j.get_posts_discussed(channel=test_channel)
         assert r[0] == 200
         assert 'posts' in r[1]
 
         if not r[1]['posts']:
-            pytest.skip("posts_discussed(channel=selfies) returned no posts")
+            pytest.skip("posts_discussed(channel=) returned no posts")
 
         print("after:", r[1]['posts'][10])
-        r2 = self.j.get_posts_discussed(channel="selfies", after=r[1]['posts'][10]['post_id'])
+        r2 = self.j.get_posts_discussed(channel=test_channel, after=r[1]['posts'][10]['post_id'])
         assert r2[0] == 200
         assert 'posts' in r2[1]
         if not r2[1]['posts']:
-            pytest.skip("posts_discussed(channel=selfies, after=) returned no posts")
+            pytest.skip("posts_discussed(channel=, after=) returned no posts")
 
         # did the after parameter work?
         r2_child_counts = [post.get("child_count", 0) for post in r2[1]["posts"]]
         assert all([r[1]['posts'][10]["child_count"] + 1 >= t for t in r2_child_counts[1:]])
 
     def test_get_posts_channel(self):
-        r = self.j.get_posts_recent(channel="selfies")
+        r = self.j.get_posts_recent(channel=test_channel)
         assert r[0] == 200
         assert "posts" in r[1]
 
@@ -130,8 +132,8 @@ class TestUnverifiedAccount:
         assert self.j.get_channel_meta(channel)[0] == 200
 
     def test_follow_channel(self):
-        assert self.j.follow_channel("WasGehtHeute?")[0] == 204
-        assert self.j.unfollow_channel("WasGehtHeute?")[0] == 204
+        assert self.j.follow_channel(test_channel)[0] == 204
+        assert self.j.unfollow_channel(test_channel)[0] == 204
 
     def test_get_config(self):
         r = self.j.get_user_config()
@@ -235,6 +237,8 @@ class TestVerifiedAccount:
         r = self.j.refresh_all_tokens()
         assert r[0] == 200
 
+        assert self.j.set_location(lat, lng, city)[0] == 204
+
         # get two post_ids for further testing
         r = self.j.get_posts_discussed()
         assert r[0] == 200
@@ -251,7 +255,7 @@ class TestVerifiedAccount:
                 self.j.pin(post["post_id"])
 
         # follow the channel so we can post to it
-        assert self.j.follow_channel("WasGehtHeute?")[0] == 204
+        assert self.j.follow_channel(test_channel)[0] == 204
 
     def __repr__(self):
         return "TestUnverifiedAccount <%s, %s>" % (self.pid1, self.pid2)
@@ -357,16 +361,15 @@ class TestVerifiedAccount:
     @flaky(max_runs=2, rerun_filter=delay_rerun)
     def test_post_channel(self):
         color = "9EC41C"
-        channel = "WasGehtHeute?"
         msg = "This is an automated test message to the channel %s. Color is #%s. Location is %f:%f. Time is %s. %s" % \
-                (channel, color, lat, lng, datetime.datetime.now(), "".join(choice(ascii_lowercase) for _ in range(20)))
+                (test_channel, color, lat, lng, datetime.datetime.now(), "".join(choice(ascii_lowercase) for _ in range(20)))
         
-        r = self.j.create_post(msg, color=color, channel=channel)
+        r = self.j.create_post(msg, color=color, channel=test_channel)
         print(r)
         assert r[0] == 200
         assert "post_id" in r[1]
 
-        p = self.j.get_posts_recent(channel=channel)
+        p = self.j.get_posts_recent(channel=test_channel)
         assert p[0] == 200
         print([post["post_id"] for post in p[1]["posts"]])
         assert r[1]["post_id"] in [post["post_id"] for post in p[1]["posts"]]
@@ -383,7 +386,7 @@ class TestVerifiedAccount:
         with open("test/testimg.png", "rb") as f:
             imgdata = base64.b64encode(f.read()).decode("utf-8") + "".join(choice(ascii_lowercase) for _ in range(10))
         
-        r = self.j.create_post(msg, b64img=imgdata, color=color, channel="WasGehtHeute?")
+        r = self.j.create_post(msg, b64img=imgdata, color=color, channel=test_channel)
         print(r)
         assert r[0] == 200
         assert "post_id" in r[1]
