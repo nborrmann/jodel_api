@@ -31,5 +31,5 @@ setup(name='jodel_api',
       package_dir={'': 'src'},
       py_modules=['jodel_api'],
       setup_requires=['pytest-runner', ],
-      tests_require=['pytest', ],
+      tests_require=['pytest', 'flaky'],
       zip_safe=False)

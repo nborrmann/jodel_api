@@ -11,9 +11,16 @@ from mock import MagicMock, patch
 import builtins
 import requests
 import os
+from flaky import flaky
+import time
 
 lat, lng, city = 48.144378, 11.573044, "Munich"
 
+def delay_rerun(*args):
+    time.sleep(3)
+    return True
+
+@flaky(max_runs=2, rerun_filter=delay_rerun)
 class TestUnverifiedAccount:
 
     @classmethod
@@ -215,10 +222,10 @@ class TestUnverifiedAccount:
         assert r[0] == 200
         assert requests_func.call_count == 1
 
-
 @pytest.mark.skipif(not os.environ.get("JODEL_ACCOUNT"), reason="requires an account uid as environment variable")
 class TestVerifiedAccount:
 
+    @flaky(max_runs=2, rerun_filter=delay_rerun)
     @classmethod
     def setup_class(self):
         # this hack only works because we immediately refresh all tokens after instantiating the account
@@ -249,6 +256,7 @@ class TestVerifiedAccount:
     def __repr__(self):
         return "TestUnverifiedAccount <%s, %s>" % (self.pid1, self.pid2)
 
+    @flaky(max_runs=2, rerun_filter=delay_rerun)
     def test_verify(self, capsys):
         self.j.verify_account()
         out, err = capsys.readouterr()
@@ -294,6 +302,7 @@ class TestVerifiedAccount:
         r2_create_times = [post["created_at"] for post in r2[1]["posts"]]
         assert all([r[1]['posts'][3]["created_at"] > t for t in r2_create_times])
 
+    @flaky(max_runs=2, rerun_filter=delay_rerun)
     def test_notifications_read(self):
         assert self.j.get_notifications_new()[0] == 200
 
@@ -309,6 +318,7 @@ class TestVerifiedAccount:
         assert self.j.notification_read(notification_id=nid)[0] == 204
         assert self.j.notification_read(post_id=self.pid1)[0] == 204
 
+    @flaky(max_runs=2, rerun_filter=delay_rerun)
     def test_post_message(self):
         color = "FF9908"
         msg = "This is an automated test message. äöü§$%%&àô. Color is #%s. Location is %f:%f. Time is %s. %s" % \
@@ -325,6 +335,7 @@ class TestVerifiedAccount:
 
         assert self.j.delete_post(r[1]["post_id"])[0] == 204
 
+    @flaky(max_runs=2, rerun_filter=delay_rerun)
     def test_post_reply(self):
         msg = "This is an automated test message. Location is %f:%f. Time is %s. %s" % \
                 (lat, lng, datetime.datetime.now(), "".join(choice(ascii_lowercase) for _ in range(20)))
@@ -343,6 +354,7 @@ class TestVerifiedAccount:
 
         assert self.j.delete_post(r[1]["post_id"])[0] == 204
 
+    @flaky(max_runs=2, rerun_filter=delay_rerun)
     def test_post_channel(self):
         color = "9EC41C"
         channel = "WasGehtHeute?"
@@ -363,6 +375,7 @@ class TestVerifiedAccount:
 
         assert self.j.delete_post(r[1]["post_id"])[0] == 204
 
+    @flaky(max_runs=2, rerun_filter=delay_rerun)
     def test_post_channel_img(self):
         color = "9EC41C"
         msg = "This is an automated test message. Color is #%s. Location is %f:%f. Time is %s. %s" % \
@@ -377,6 +390,7 @@ class TestVerifiedAccount:
 
         assert self.j.delete_post(r[1]["post_id"])[0] == 204
 
+    @flaky(max_runs=2, rerun_filter=delay_rerun)
     def test_vote(self):
         assert self.j.upvote(self.pid1)[0] == 200
         assert self.j.downvote(self.pid2)[0] == 200
