@@ -227,8 +227,8 @@ class TestUnverifiedAccount:
 @pytest.mark.skipif(not os.environ.get("JODEL_ACCOUNT"), reason="requires an account uid as environment variable")
 class TestVerifiedAccount:
 
-    @flaky(max_runs=2, rerun_filter=delay_rerun)
     @classmethod
+    @flaky(max_runs=2, rerun_filter=delay_rerun)
     def setup_class(self):
         # this hack only works because we immediately refresh all tokens after instantiating the account
         acc = {'access_token': 'A', 'distinct_id': 'A', 'refresh_token': 'A', 'expiration_date': 1, 
