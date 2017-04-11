@@ -228,8 +228,7 @@ Rate-Limits
 The Jodel API appears to have the following (IP-based) rate-limits
 
 -  max of 60 new account registrations from one IP per half hour
--  max of 200 (?) votes (possibly also post creations?) in an unknown
-   time frame
+-  max of 200 votes (possibly also post creations?) per minute (60 seconds)
 
 They also hand out perma-bans if you overdo it.
 
