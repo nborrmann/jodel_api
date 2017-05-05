@@ -63,6 +63,7 @@ class TestUnverifiedAccount:
         assert self.j.get_my_replied_posts()[0] == 200
         assert self.j.get_my_pinned_posts()[0] == 200
 
+    @pytest.mark.xfail(reason="newsfeed endpoint has been disabled")
     def test_newsfeed_after(self):
         r = self.j.get_newsfeed()
         assert r[0] == 200
