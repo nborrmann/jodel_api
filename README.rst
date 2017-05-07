@@ -172,10 +172,13 @@ API calls through the ``**xargs`` argument that will be passed to the
 Error Codes
 ~~~~~~~~~~~
 
--  **429 "Too Many Requests"**: Your IP is rate-limited.
+-  **403 "Access Denied"**: Your IP is banned accross endpoints,
+   just read-only endpoints still work. Effective for 24 hours.
+-  **429 "Too Many Requests"**: Your IP is rate-limited. Applies only
+   to one specific endpoint.
 -  **477 "Signed Request Expected"**: This library should handle request
-   signing. If this happens on the latest version of ``jodel_api`` there
-   is a bug in this library. Please open an issue.
+   signing. Make sure to upgrade to the latest version of ``jodel_api``,
+   as the signing key changes every few weeks.
 -  **478 "Account not verified"**: Solve the captcha challenge (eg.
    through ``verify_account()``).
 -  **502 "Bad Gateway"**: Something went wrong server-side. This happens
@@ -183,8 +186,19 @@ Error Codes
    it sees this error. If you encounter this status, the jodel servers
    are probably having issues. Try again later.
 
+Rate-Limits
+~~~~~~~~~~~
+
+The Jodel API appears to have the following (IP-based) rate-limits
+
+-  max of 200 new account registrations from one IP per half hour
+-  max of 200 votes per minute
+-  max of 100 captcha requests per minute
+
+They also hand out 403 bans if you overdo it.
+
 Tests
-~~~~~
+-----
 
 Nearly all tests in ``jodel_api_test.py`` are integration tests, which
 actually hit the Jodel servers. These can fail for any number of reasons
@@ -224,16 +238,6 @@ Clone the directory, install the library and run the tests with
 .. code:: python
 
     python setup.py test
-
-Rate-Limits
------------
-
-The Jodel API appears to have the following (IP-based) rate-limits
-
--  max of 60 new account registrations from one IP per half hour
--  max of 200 votes (possibly also post creations?) per minute (60 seconds)
-
-They also hand out perma-bans if you overdo it.
 
 .. |Build Status| image:: https://travis-ci.org/nborrmann/jodel_api.svg?branch=master
    :target: https://travis-ci.org/nborrmann/jodel_api
