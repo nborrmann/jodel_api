@@ -79,6 +79,9 @@ verified by entering a captcha:
     Account successfully verified.
     >>> j.verify_acccount()
     Account is already verified.
+    
+(It's a fun challenge to solve these captchas using machine learning.
+`Here's <https://u.nya.is/tbqweg.mp4/>`_ what that looks like when you're done.)
 
 After ``expiration_date`` has passed, call ``refresh_access_tokens()``
 to re-authenticate. If ``refresh_access_token`` fails, use
