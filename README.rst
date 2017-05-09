@@ -103,63 +103,83 @@ All remote API calls return a tuple of HTTP status\_code and the
 response (if possible a dict, parsed from the API response), but might
 also be a string (error message).
 
-The following API calls are supported (presented without their
+The following API calls are supported (presented without their 
 respective responses):
+
 
 .. code:: python
 
-    >>> j.set_location(lat, lng, city, country=None, name=None) # country and name appear to have no effect
+    # API methods for reading posts:
+    >>> j.get_posts_recent(skip=0, limit=60, after=None, mine=False, hashtag=None, channel=None)
+    >>> j.get_posts_popular(skip=0, limit=60, after=None, mine=False, hashtag=None, channel=None)
+    >>> j.get_posts_discussed(skip=0, limit=60, after=None, mine=False, hashtag=None, channel=None)
+    >>> j.get_pictures_recent(self, skip=0, limit=60, after=None)
+    >>> j.get_pictures_popular(self, skip=0, limit=60, after=None)
+    >>> j.get_pictures_discussed(self, skip=0, limit=60, after=None)
+    >>> j.get_my_pinned_posts(skip=0, limit=60, after=None)
+    >>> j.get_my_replied_posts(skip=0, limit=60, after=None)
+    >>> j.get_my_voted_posts(skip=0, limit=60, after=None)
+    >>> j.get_newsfeed(after="")
+
+    # API methods for interacting with single posts:
     >>> j.create_post(message=None, imgpath=None, b64img=None, color=None, ancestor=None, channel="")
     >>> j.get_post_details(post_id)
-    # This api endpoint implements paging and returns at most 50 replies, use the skip parameter to page through the thread. 
+    >>> # This api endpoint implements paging and returns at most 50 replies,
+    >>> # use the skip parameter to page through the thread:
     >>> j.get_post_details_v3(post_id, skip=0) 
     >>> j.upvote(post_id)
     >>> j.downvote(post_id)
+    >>> j.give_thanks(post_id)
+    >>> j.get_share_url(post_id)
     >>> j.pin(post_id)
     >>> j.unpin(post_id)
     >>> j.enable_notifications(post_id)
     >>> j.disable_notifications(post_id)
-    >>> j.give_thanks(post_id)
-    >>> j.get_share_url(post_id)
     >>> j.delete_post(post_id) # Only works on your own posts ಠ_ಠ
+
+    # API methods for interacting with sticky posts:
+    >>> j.upvote_sticky_post(self, post_id)
+    >>> j.downvote_sticky_post(self, post_id)
+    >>> j.dismiss_sticky_post(self, post_id)
+
+    # API methods for interacting with notifications:
     >>> j.get_notifications()
     >>> j.get_notifications_new()
     >>> j.notification_read(post_id=None, notification_id=None)
+
+    # API methods for interacting with channels:
     >>> j.get_recommended_channels()
     >>> j.get_channel_meta(channel)
     >>> j.follow_channel(channel)
     >>> j.unfollow_channel(channel)
+
+    # API methods for interacting with your user profile:
+    >>> j.set_location(lat, lng, city, country=None, name=None) # country and name appear to have no effect
+    >>> j.set_user_profile(self, user_type=None, gender=None, age=None)
     >>> j.get_user_config()
     >>> j.get_karma()
     >>> j.get_captcha()
     >>> j.submit_captcha(key, answer)
 
 
-The following calls can be used to read posts. The parameters ``skip``,
+The parameters ``skip``,
 ``limit`` and ``after`` implement paging. While ``skip`` and ``limit``
 are integers, ``after`` is a ``post_id`` parameter and will return all
 jodels that follow that one. The former two paramters seem to be 
 deprecated in favor of the latter, however ``after`` doesn't work
 on all ``/mine/`` endpoints (ie. ``mine=True`` or ``get_my_x_posts``). 
 
-The arguments ``mine`` (boolean), ``hashtag``, ``channel`` (both strings) are exclusive. If
-``mine`` evaluates to ``true``, the other two arguments are discarded,
-if ``hashtag`` evaluates ``true`` , ``channel`` is discarded.
+The arguments ``mine`` (boolean), ``hashtag``, ``channel`` (both strings)
+ are exclusive. If ``mine`` evaluates to ``true``, the other two arguments
+are discarded, if ``hashtag`` evaluates ``true`` , ``channel`` is 
+discarded.
 
 ``get_newsfeed()`` is a new endpoint (as of March 17) that isn't yet
 available through the app. It returns all popular (upvotes/comments) 
 Jodels from a larger timeframe than the usual ``get_posts()`` methods
 can access. 
 
-.. code:: python
-
-    >>> j.get_posts_recent(skip=0, limit=60, after="", mine=False, hashtag="", channel="")
-    >>> j.get_posts_popular(skip=0, limit=60, after="", mine=False, hashtag="", channel="")
-    >>> j.get_posts_discussed(skip=0, limit=60, after="", mine=False, hashtag="", channel="")
-    >>> j.get_my_pinned_posts(skip=0, limit=60, after="")
-    >>> j.get_my_replied_posts(skip=0, limit=60, after="")
-    >>> j.get_my_voted_posts(skip=0, limit=60, after="")
-    >>> j.get_newsfeed(after="")
+For unimplemented endpoints, check the github issues.
 
 You can pass additional arguments (such as proxies and timeouts) to all
 API calls through the ``**xargs`` argument that will be passed to the
