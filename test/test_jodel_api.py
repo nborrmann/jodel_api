@@ -63,6 +63,7 @@ class TestUnverifiedAccount:
         assert self.j.get_my_replied_posts()[0] == 200
         assert self.j.get_my_pinned_posts()[0] == 200
 
+    @flaky(max_runs=1)
     @pytest.mark.xfail(reason="newsfeed endpoint has been disabled")
     def test_newsfeed_after(self):
         r = self.j.get_newsfeed()
@@ -105,7 +106,7 @@ class TestUnverifiedAccount:
         assert r[0] == 200
         assert 'posts' in r[1]
 
-        if not r[1]['posts']:
+        if not r[1]['posts'] or len(r[1]['posts']) < 11:
             pytest.skip("posts_discussed(channel=) returned no posts")
 
         print("after:", r[1]['posts'][10])
@@ -124,6 +125,19 @@ class TestUnverifiedAccount:
         assert r[0] == 200
         assert "posts" in r[1]
 
+    def test_get_pictures(self):
+        r = self.j.get_pictures_recent()
+        assert r[0] == 200
+        assert "posts" in r[1]
+
+        r = self.j.get_pictures_popular()
+        assert r[0] == 200
+        assert "posts" in r[1]
+
+        r = self.j.get_pictures_discussed()
+        assert r[0] == 200
+        assert "posts" in r[1]
+
     def test_get_channels(self):
         r = self.j.get_recommended_channels()
         assert "local" in r[1]
@@ -136,13 +150,28 @@ class TestUnverifiedAccount:
         assert self.j.follow_channel(test_channel)[0] == 204
         assert self.j.unfollow_channel(test_channel)[0] == 204
 
-    def test_get_config(self):
+    def test_set_get_config(self):
+        user_type = choice(["high_school", "high_school_graduate", "student", "apprentice", "employee", "other"])
+        r = self.j.set_user_profile(user_type=user_type, gender=choice(['m', 'f']))
+        assert r[0] == 204
+
         r = self.j.get_user_config()
         print(r)
         assert r[0] == 200
         assert "verified" in r[1]
+        assert r[1]["user_type"] == user_type
 
         assert self.j.get_karma()[0] == 200
+
+    def set_user_profile(self, user_type=None, gender=None, age=None, **kwargs):
+        allowed_user_types = ["high_school", "high_school_graduate", "student", "apprentice", "employee", "other"]
+        if user_type not in allowed_user_types:
+            raise ValueError("user_type must be one of {}.".format(allowed_user_types))
+
+        if gender not in ["m", "f"]:
+            raise ValueError("gender must be either m or f.")
+
+        return self._send_request("PUT", "/v3/user/profile", payload={"user_type": user_type, "gender": gender, "age": age}, **kwargs)
 
     def test_notifications(self):
         assert self.j.get_notifications_new()[0] == 200
