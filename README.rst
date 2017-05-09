@@ -179,7 +179,7 @@ available through the app. It returns all popular (upvotes/comments)
 Jodels from a larger timeframe than the usual ``get_posts()`` methods
 can access. 
 
-For unimplemented endpoints, check the github issues.
+For unimplemented endpoints, check issue #22.
 
 You can pass additional arguments (such as proxies and timeouts) to all
 API calls through the ``**xargs`` argument that will be passed to the
