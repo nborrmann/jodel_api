@@ -167,10 +167,10 @@ The parameters ``skip``,
 are integers, ``after`` is a ``post_id`` parameter and will return all
 jodels that follow that one. The former two paramters seem to be 
 deprecated in favor of the latter, however ``after`` doesn't work
-on all ``/mine/`` endpoints (ie. ``mine=True`` or ``get_my_x_posts``). 
+on all ``/mine/`` endpoints (ie. ``mine=True`` or ``get_my_x_posts``).
 
 The arguments ``mine`` (boolean), ``hashtag``, ``channel`` (both strings)
- are exclusive. If ``mine`` evaluates to ``true``, the other two arguments
+are exclusive. If ``mine`` evaluates to ``true``, the other two arguments
 are discarded, if ``hashtag`` evaluates ``true`` , ``channel`` is 
 discarded.
 
