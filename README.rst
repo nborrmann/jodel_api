@@ -179,8 +179,6 @@ available through the app. It returns all popular (upvotes/comments)
 Jodels from a larger timeframe than the usual ``get_posts()`` methods
 can access. 
 
-For unimplemented endpoints, check issue #22.
-
 You can pass additional arguments (such as proxies and timeouts) to all
 API calls through the ``**xargs`` argument that will be passed to the
 ``requests.request()`` function:
@@ -188,6 +186,10 @@ API calls through the ``**xargs`` argument that will be passed to the
 .. code:: python
 
     >>> j.upvote(post_id, timeout=5, proxies={'https': '127.0.0.1:5000'})
+    
+For unimplemented endpoints, check `issue #22 
+<https://github.com/nborrmann/jodel_api/issues/22/>`_.
+
 
 Error Codes
 ~~~~~~~~~~~
