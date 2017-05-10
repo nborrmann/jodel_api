@@ -113,13 +113,13 @@ respective responses):
     >>> j.get_posts_recent(skip=0, limit=60, after=None, mine=False, hashtag=None, channel=None)
     >>> j.get_posts_popular(skip=0, limit=60, after=None, mine=False, hashtag=None, channel=None)
     >>> j.get_posts_discussed(skip=0, limit=60, after=None, mine=False, hashtag=None, channel=None)
-    >>> j.get_pictures_recent(self, skip=0, limit=60, after=None)
-    >>> j.get_pictures_popular(self, skip=0, limit=60, after=None)
-    >>> j.get_pictures_discussed(self, skip=0, limit=60, after=None)
+    >>> j.get_pictures_recent(skip=0, limit=60, after=None)
+    >>> j.get_pictures_popular(skip=0, limit=60, after=None)
+    >>> j.get_pictures_discussed(skip=0, limit=60, after=None)
     >>> j.get_my_pinned_posts(skip=0, limit=60, after=None)
     >>> j.get_my_replied_posts(skip=0, limit=60, after=None)
     >>> j.get_my_voted_posts(skip=0, limit=60, after=None)
-    >>> j.get_newsfeed(after="")
+    >>> j.get_newsfeed(after=None)
 
     # API methods for interacting with single posts:
     >>> j.create_post(message=None, imgpath=None, b64img=None, color=None, ancestor=None, channel="")
@@ -138,9 +138,9 @@ respective responses):
     >>> j.delete_post(post_id) # Only works on your own posts ಠ_ಠ
 
     # API methods for interacting with sticky posts:
-    >>> j.upvote_sticky_post(self, post_id)
-    >>> j.downvote_sticky_post(self, post_id)
-    >>> j.dismiss_sticky_post(self, post_id)
+    >>> j.upvote_sticky_post(post_id)
+    >>> j.downvote_sticky_post(post_id)
+    >>> j.dismiss_sticky_post(post_id)
 
     # API methods for interacting with notifications:
     >>> j.get_notifications()
@@ -155,7 +155,7 @@ respective responses):
 
     # API methods for interacting with your user profile:
     >>> j.set_location(lat, lng, city, country=None, name=None) # country and name appear to have no effect
-    >>> j.set_user_profile(self, user_type=None, gender=None, age=None)
+    >>> j.set_user_profile(user_type=None, gender=None, age=None)
     >>> j.get_user_config()
     >>> j.get_karma()
     >>> j.get_captcha()
