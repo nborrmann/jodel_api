@@ -194,6 +194,10 @@ For unimplemented endpoints, check `issue #22
 Error Codes
 ~~~~~~~~~~~
 
+-  **401 "Unauthorized"**: Your `access_token` is invalid. Either 
+   you messed up, or it is outdated. You need to call 
+   `refresh_access_token()` or `refresh_all_token()` (check the 
+   above section on account creation).
 -  **403 "Access Denied"**: Your IP is banned accross endpoints,
    just read-only endpoints still work. Effective for 24 hours.
 -  **429 "Too Many Requests"**: Your IP is rate-limited. Applies only
