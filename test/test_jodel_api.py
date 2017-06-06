@@ -38,6 +38,12 @@ class TestUnverifiedAccount:
     def __repr__(self):
         return "TestUnverifiedAccount <%s, %s>" % (self.j.get_account_data()['device_uid'], self.pid)
 
+    @flaky(max_runs=1)
+    def test_setup(self):
+        # This is a workaround for a bug in flaky that makes all tests pass if there is an error in setup
+        # https://github.com/box/flaky/issues/124
+        assert 1==1
+
     def test_reinitalize(self):
         acc = self.j.get_account_data()
         with pytest.raises(Exception) as excinfo:
