@@ -183,39 +183,6 @@ class TestUnverifiedAccount:
         assert self.j.get_notifications_new()[0] == 200
         assert self.j.get_notifications()[0] == 200
 
-    def test_captcha(self):
-        r = self.j.get_captcha()
-        print(r)
-        assert r[0] == 200
-        assert "image_url" in r[1]
-        assert "key" in r[1]
-
-        assert self.j.submit_captcha(r[1]["key"], [13])[0] == 200
-
-    @patch('jodel_api.JodelAccount.submit_captcha', return_value=(200, {'verified': True}))
-    @patch('jodel_api.obtain_input', side_effect="0 1 5 7")
-    def test_verify_success(self, input_func, submit_func, capsys):
-        self.j.verify_account()
-
-        out, err = capsys.readouterr()
-        lines = out.split("\n")
-        assert "https://" == lines[0][:8]
-        assert "Account successfully verified." == lines[1]
-
-    @patch("jodel_api.obtain_input", side_effect=["0 1 13 25", "asdf asdf", KeyboardInterrupt()])
-    def test_verify_fail(self, input_func, capsys):
-        with pytest.raises(KeyboardInterrupt) as excinfo:
-            self.j.verify_account()
-    
-        assert "KeyboardInterrupt" in str(excinfo)
-        out, err = capsys.readouterr()
-        lines = out.split("\n")
-        assert "https://" == lines[0][:8]
-        assert "Verification failed. Retrying ..." == lines[1]
-        assert "https://" == lines[2][:8]
-        assert "Invalid input. Retrying ..." == lines[3]
-        assert "https://" == lines[4][:8]
-
     def test_post_details(self):
         r = self.j.get_post_details(self.pid)
         assert r[0] == 200
@@ -295,12 +262,6 @@ class TestVerifiedAccount:
 
     def __repr__(self):
         return "TestUnverifiedAccount <%s, %s>" % (self.pid1, self.pid2)
-
-    @flaky(max_runs=2, rerun_filter=delay_rerun)
-    def test_verify(self, capsys):
-        self.j.verify_account()
-        out, err = capsys.readouterr()
-        assert out == "Account is already verified.\n"
 
     @pytest.mark.xfail(reason="after parameter doesn't work with /mine/ endpoints")
     def test_my_pin_after(self):

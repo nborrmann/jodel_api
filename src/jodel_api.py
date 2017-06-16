@@ -132,33 +132,6 @@ class JodelAccount:
             self.expiration_date = resp[1]['expiration_date']
         return resp
 
-    def verify_account(self):
-        r = self.get_user_config()
-        if r[0] == 200 and r[1]['verified']:
-            print("Account is already verified.")
-            return
-
-        while True:
-            r = self.get_captcha()
-            if r[0] != 200:
-                raise Exception(str(r[1]))
-
-            print(r[1]['image_url'])
-            answer = obtain_input("Open the url above in a browser and enter the images containing a racoon (left to right, starting with 0) separated by spaces: ")
-            
-            try:
-                answer = [int(i) for i in answer.split(' ')]
-            except:
-                print("Invalid input. Retrying ...")
-                continue
-
-            r = self.submit_captcha(r[1]['key'], answer)
-            if r[0] == 200 and r[1]['verified']:
-                print("Account successfully verified.")
-                return
-            else:
-                print("Verification failed. Retrying ...")
-
     # ################# #
     # GET POSTS METHODS #
     # ################# #
@@ -336,13 +309,6 @@ class JodelAccount:
 
     def get_user_config(self, **kwargs):
         return self._send_request("GET", "/v3/user/config", **kwargs)
-
-    def get_captcha(self, **kwargs):
-        return self._send_request("GET", "/v3/user/verification/imageCaptcha", **kwargs)
-
-    def submit_captcha(self, key, answer, **kwargs):
-        payload = {'key': key, 'answer': answer}
-        return self._send_request("POST", "/v3/user/verification/imageCaptcha", payload=payload, **kwargs)
 
 
 # helper function to mock input

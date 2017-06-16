@@ -65,23 +65,11 @@ calls:
 
     >>> j = jodel_api.JodelAccount(lat=lat, lng=lng, city=city, update_location=False, **account_data)
 
-For some functionality (look out for error 478) accounts need to be
-verified by entering a captcha:
-
-.. code:: python
-
-    >>> j.verify_account()
-    https://s3-eu-west-1.amazonaws.com/jodel-image-captcha/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.png
-    Open the url above in a browser and enter the images containing a racoon (left to right, starting with 0) separated by spaces: 3 5
-    Verification failed. Retrying ...
-    https://s3-eu-west-1.amazonaws.com/jodel-image-captcha/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.png
-    Open the url above in a browser and enter the images containing a racoon (left to right, starting with 0) separated by spaces: 0 3 7
-    Account successfully verified.
-    >>> j.verify_acccount()
-    Account is already verified.
-    
-(It's a fun challenge to solve these captchas using machine learning.
-`Here's <https://u.nya.is/tbqweg.mp4/>`_ what that looks like when you're done.)
+For some functionality like voting and posting (look out for error 478) 
+accounts need to be verified. **The captcha verification method has been
+disabled as of June 17.** Verification is now only possible through 
+Google Cloud Messaging which is not currently possible through this 
+library.
 
 After ``expiration_date`` has passed, call ``refresh_access_tokens()``
 to re-authenticate. If ``refresh_access_token`` fails, use
