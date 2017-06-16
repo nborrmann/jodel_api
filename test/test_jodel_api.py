@@ -233,12 +233,8 @@ class TestVerifiedAccount:
     @classmethod
     @flaky(max_runs=2, rerun_filter=delay_rerun)
     def setup_class(self):
-        # this hack only works because we immediately refresh all tokens after instantiating the account
-        acc = {'access_token': 'A', 'distinct_id': 'A', 'refresh_token': 'A', 'expiration_date': 1, 
-               'device_uid': os.environ.get("JODEL_ACCOUNT")}
+        acc = {'device_uid': os.environ.get("JODEL_ACCOUNT")}
         self.j = jodel_api.JodelAccount(lat, lng, city, update_location=False, **acc)
-        r = self.j.refresh_all_tokens()
-        assert r[0] == 200
 
         assert self.j.set_location(lat, lng, city)[0] == 204
 

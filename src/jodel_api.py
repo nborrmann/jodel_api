@@ -33,11 +33,13 @@ class JodelAccount:
                  **kwargs):
         self.lat, self.lng, self.location_dict = lat, lng, self._get_location_dict(lat, lng, city, country, name)
 
+        if device_uid:
+            self.device_uid = device_uid
+
         if access_token and device_uid and refresh_token and distinct_id and expiration_date:
             self.expiration_date = expiration_date
             self.distinct_id = distinct_id
             self.refresh_token = refresh_token
-            self.device_uid = device_uid
             self.access_token = access_token
             if update_location:
                 r = self.set_location(lat, lng, city, country, name, **kwargs)
@@ -45,7 +47,6 @@ class JodelAccount:
                     raise Exception("Error updating location: " + str(r))
 
         else:
-            print("Creating new account.")
             r = self.refresh_all_tokens(**kwargs)
             if r[0] != 200:
                 raise Exception("Error creating new account: " + str(r))
@@ -105,6 +106,7 @@ class JodelAccount:
         """ Creates a new account with random ID if self.device_uid is not set. Otherwise renews all tokens of the
         account with ID = self.device_uid. """
         if not self.device_uid:
+            print("Creating new account.")
             self.device_uid = ''.join(random.choice('abcdef0123456789') for _ in range(64))
 
         payload = {"client_id": self.client_id, 
