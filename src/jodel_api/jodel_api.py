@@ -13,7 +13,8 @@ import json
 import random
 import requests
 from urllib.parse import urlparse
-from . import gcmhack
+from jodel_api import gcmhack
+import time
 
 s = requests.Session()
 
@@ -25,15 +26,19 @@ class JodelAccount:
     client_id = '81e8a76e-1e02-4d17-9ba0-8a7020261b26'
     secret = 'FYRQOjgJpZHvfbuseuJHLGPCZxzCreTTjekmUdsT'.encode('ascii')
     version = '4.48.0'
+    secret_legacy = 'hyTBJcvtpDLSgGUWjybbYUNKSSoVvMcfdjtjiQvf'.encode('ascii')
+    version_legacy = '4.47.0'
+
 
     access_token = None
     device_uid = None
 
     def __init__(self, lat, lng, city, country=None, name=None, update_location=True,
                  access_token=None, device_uid=None, refresh_token=None, distinct_id=None, expiration_date=None, 
-                 **kwargs):
+                 is_legacy=True, **kwargs):
         self.lat, self.lng, self.location_dict = lat, lng, self._get_location_dict(lat, lng, city, country, name)
 
+        self.is_legacy = is_legacy
         if device_uid:
             self.device_uid = device_uid
 
@@ -84,10 +89,15 @@ class JodelAccount:
                "%".join(sorted("{}%{}".format(key, value) for key, value in (params if params else {}).items())),
                json.dumps(payload) if payload else ""]
 
-        signature = hmac.new(self.secret, "%".join(req).encode("utf-8"), sha1).hexdigest().upper()
+        if self.is_legacy:
+            secret, version = self.secret_legacy, self.version_legacy
+        else:
+            secret, version = self.secret, self.version
+
+        signature = hmac.new(secret, "%".join(req).encode("utf-8"), sha1).hexdigest().upper()
 
         headers['X-Authorization'] = 'HMAC ' + signature
-        headers['X-Client-Type'] = 'android_{}'.format(self.version)
+        headers['X-Client-Type'] = 'android_{}'.format(version)
         headers['X-Timestamp'] = timestamp
         headers['X-Api-Version'] = '0.2'
 
@@ -101,13 +111,15 @@ class JodelAccount:
 
     def get_account_data(self):
         return {'expiration_date': self.expiration_date, 'distinct_id': self.distinct_id,
-                'refresh_token': self.refresh_token, 'device_uid': self.device_uid, 'access_token': self.access_token}
+                'refresh_token': self.refresh_token, 'device_uid': self.device_uid, 'access_token': self.access_token,
+                'is_legacy': self.is_legacy}
 
     def refresh_all_tokens(self, **kwargs):
         """ Creates a new account with random ID if self.device_uid is not set. Otherwise renews all tokens of the
         account with ID = self.device_uid. """
         if not self.device_uid:
             print("Creating new account.")
+            self.is_legacy = False
             self.device_uid = ''.join(random.choice('abcdef0123456789') for _ in range(64))
 
         payload = {"client_id": self.client_id, 
@@ -145,9 +157,10 @@ class JodelAccount:
 
     def verify(self, android_account=None, **kwargs):
         if not android_account:
-            android_account = gcmhack.AndroidAccount()
+            android_account = gcmhack.AndroidAccount(**kwargs)
+            time.sleep(5)
 
-        token = android_account.get_push_token()
+        token = android_account.get_push_token(**kwargs)
         r = self.send_push_token(token, **kwargs)
         if r[0] != 204:
             return r

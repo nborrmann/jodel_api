@@ -22,16 +22,6 @@ def delay_rerun(*args):
     return True
 
 
-class TestVerification:
-
-    def test_verify(self):
-        aid = jodel_api.AndroidAccount()
-
-        self.j = jodel_api.JodelAccount(lat + uniform(-0.01, 0.01), lng + uniform(-0.01, 0.01), city)
-        r = self.j.verify(aid)
-        print(r)
-        assert r[0] == 200
-
 @flaky(max_runs=2, rerun_filter=delay_rerun)
 class TestUnverifiedAccount:
 
@@ -45,14 +35,19 @@ class TestUnverifiedAccount:
         assert "posts" in r[1] and "post_id" in r[1]["posts"][0]
         self.pid = r[1]['posts'][0]['post_id']
 
+        assert self.j.get_account_data()['is_legacy'] == False
+
     def __repr__(self):
         return "TestUnverifiedAccount <%s, %s>" % (self.j.get_account_data()['device_uid'], self.pid)
 
-    @flaky(max_runs=1)
-    def test_setup(self):
-        # This is a workaround for a bug in flaky that makes all tests pass if there is an error in setup
-        # https://github.com/box/flaky/issues/124
-        assert 1==1
+    @flaky(max_runs=3, rerun_filter=delay_rerun)
+    def test_verify(self):
+        r = self.j.verify()
+        assert r[0] == 200
+
+        r = self.j.get_user_config()
+        assert r[0] == 200
+        assert r[1]['verified'] == True
 
     def test_reinitalize(self):
         acc = self.j.get_account_data()
@@ -209,8 +204,8 @@ class TestUnverifiedAccount:
         assert self.j.unpin(self.pid)[0] == 200
 
     def test_vote(self):
-        assert self.j.upvote(self.pid)[0] == 478
-        assert self.j.downvote(self.pid)[0] == 478
+        assert self.j.upvote(self.pid)[0] == 200
+        assert self.j.downvote(self.pid)[0] == 200
 
     def test_switch_notifications(self):
         r = self.j.enable_notifications(self.pid)
@@ -237,14 +232,15 @@ class TestUnverifiedAccount:
         assert r[0] == 200
         assert requests_func.call_count == 1
 
-@pytest.mark.skipif(not os.environ.get("JODEL_ACCOUNT"), reason="requires an account uid as environment variable")
-class TestVerifiedAccount:
+@pytest.mark.skipif(not os.environ.get("JODEL_ACCOUNT_LEGACY"), reason="requires an account uid as environment variable")
+class TestLegacyVerifiedAccount:
 
     @classmethod
     @flaky(max_runs=2, rerun_filter=delay_rerun)
     def setup_class(self):
-        acc = {'device_uid': os.environ.get("JODEL_ACCOUNT")}
-        self.j = jodel_api.JodelAccount(lat, lng, city, update_location=False, **acc)
+        acc = {'device_uid': os.environ.get("JODEL_ACCOUNT_LEGACY")}
+        self.j = jodel_api.JodelAccount(lat, lng, city, update_location=False, is_legacy=True, **acc)
+        assert self.j.get_account_data()['is_legacy']
 
         assert self.j.set_location(lat, lng, city)[0] == 204
 
@@ -268,6 +264,9 @@ class TestVerifiedAccount:
 
     def __repr__(self):
         return "TestUnverifiedAccount <%s, %s>" % (self.pid1, self.pid2)
+
+    def test_legacy(self):
+        assert self.j.get_account_data()['is_legacy']
 
     @pytest.mark.xfail(reason="after parameter doesn't work with /mine/ endpoints")
     def test_my_pin_after(self):

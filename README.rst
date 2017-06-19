@@ -65,6 +65,10 @@ calls:
 
     >>> j = jodel_api.JodelAccount(lat=lat, lng=lng, city=city, update_location=False, **account_data)
 
+Just the ``device_uid`` is sufficient to recreate an account, however
+then we need to issue a request to the jodel api, hence 
+``update_location=false`` will not work.
+
 For some functionality like voting and posting (look out for error 478) 
 accounts need to be verified. **The captcha verification method has been
 disabled as of June 17.** Verification is now only possible through 
