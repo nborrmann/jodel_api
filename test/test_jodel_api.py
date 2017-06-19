@@ -22,6 +22,16 @@ def delay_rerun(*args):
     return True
 
 
+class TestVerification:
+
+    def test_verify(self):
+        aid = jodel_api.AndroidAccount()
+
+        self.j = jodel_api.JodelAccount(lat + uniform(-0.01, 0.01), lng + uniform(-0.01, 0.01), city)
+        r = self.j.verify(aid)
+        print(r)
+        assert r[0] == 200
+
 @flaky(max_runs=2, rerun_filter=delay_rerun)
 class TestUnverifiedAccount:
 

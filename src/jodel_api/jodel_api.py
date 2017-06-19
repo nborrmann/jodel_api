@@ -13,6 +13,7 @@ import json
 import random
 import requests
 from urllib.parse import urlparse
+from . import gcmhack
 
 s = requests.Session()
 
@@ -22,8 +23,8 @@ class JodelAccount:
 
     api_url = "https://api.go-tellm.com/api{}"
     client_id = '81e8a76e-1e02-4d17-9ba0-8a7020261b26'
-    secret = 'hyTBJcvtpDLSgGUWjybbYUNKSSoVvMcfdjtjiQvf'.encode('ascii')
-    version = '4.47.0'
+    secret = 'FYRQOjgJpZHvfbuseuJHLGPCZxzCreTTjekmUdsT'.encode('ascii')
+    version = '4.48.0'
 
     access_token = None
     device_uid = None
@@ -133,6 +134,26 @@ class JodelAccount:
             self.access_token = resp[1]['access_token']
             self.expiration_date = resp[1]['expiration_date']
         return resp
+
+    def send_push_token(self, push_token, **kwargs):
+        payload={"client_id": self.client_id, "push_token": push_token}
+        return self._send_request("PUT", "/v2/users/pushToken", payload=payload, **kwargs)
+
+    def verify_push(self, server_time, verification_code, **kwargs):
+        payload={"server_time": server_time, "verification_code": verification_code}
+        return self._send_request("POST", "/v3/user/verification/push", payload=payload, **kwargs)
+
+    def verify(self, android_account=None, **kwargs):
+        if not android_account:
+            android_account = gcmhack.AndroidAccount()
+
+        token = android_account.get_push_token()
+        r = self.send_push_token(token, **kwargs)
+        if r[0] != 204:
+            return r
+
+        verification = android_account.receive_verification_from_gcm()
+        return self.verify_push(verification['server_time'], verification['verification_code'], **kwargs)
 
     # ################# #
     # GET POSTS METHODS #
