@@ -85,20 +85,23 @@ Account Verification
 For some functionality like voting and posting (look out for error 478) 
 accounts need to be verified. 
 
-With Jodel version 4.48 captcha verification has been disabled. However
-old accounts will continue to work with version 4.47. But if you ever
-use an old, verified account with version 4.48 it will become unverified.
-To this end, use the flag ``is_legacy=True`` in the constructor when 
-you instantiate an old account (on by default).
+With Jodel version ``4.48`` captcha verification has been disabled. 
+However old accounts will continue to work with version ``4.47``. But if you
+ever use an old, verified account with version ``4.48`` it will become
+unverified. To this end, use the flag ``is_legacy=True`` in the 
+constructor when you instantiate an old account (on by default). New
+accounts must be created with ``is_legacy=False``.
 
-In 4.48 accounts can only be verified through Google Cloud Messaging.
+In ``4.48`` accounts can only be verified through Google Cloud Messaging.
 The steps are as follows:
 
-1. Create an Android Account
-2. Request a push token
-3. Send push token to Jodel Servers
+1. Create an Android Account (``a = jodel_api.AndroidAccount()``)
+2. Request a push token (``a.get_push_token()``)
+3. Send push token to Jodel Servers (``j.send_push_token(token)``)
 4. Log into GCM and read push messages (``verification_code``) from Jodel
+   (``verification = a.receive_verification_from_gcm()``)
 5. Send the verification code to Jodel to verify the account
+   (``a.verify_push(server_time, verification_code)``)
 
 In ``jodel_api`` this is implemented as follows:
 
@@ -259,13 +262,13 @@ status codes, not the contents of the responses (ie. they test whether
 the API endpoints are still valid).
 
 -  For the tests in ``class TestUnverifiedAccount`` a new account is
-   created on every run and they test read-only functions for which the
-   account does not need to be verified.
--  Tests in ``class TestVerifiedAccount`` need an already verified
-   account to test voting and creating posts (posts are deleted after
-   creation). To run these tests you need to verify an account by
+   created on every run and they test GCM verification, posting and
+   read-only functions   
+-  Tests in ``class TestLegacyVerifiedAccount`` need an already verified
+   legacy account and test if it still works.
+   To run these tests you need to verify an account by
    solving the captcha and save its ``device_uid`` in the
-   environment variable ``JODEL_ACCOUNT``. Run
+   environment variable ``JODEL_ACCOUNT_LEGACY``. Run
    ``j.get_account_data()['device_uid']`` to get the value.
 
    Linux:
