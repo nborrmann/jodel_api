@@ -247,7 +247,6 @@ class TestUnverifiedAccount:
 
         assert self.j.delete_post(r[1]["post_id"])[0] == 204
 
-    @flaky(max_runs=1, rerun_filter=delay_rerun)
     @pytest.mark.skip()
     def test_post_channel(self):
         color = "9EC41C"
@@ -283,7 +282,7 @@ class TestUnverifiedAccount:
         r = self.j.enable_notifications(self.pid)
         assert r[0] == 200
         assert requests_func.call_count == 1
-        
+
     def test_follow_channel(self):
         assert self.j.follow_channel(test_channel)[0] == 204
         assert self.j.unfollow_channel(test_channel)[0] == 204
