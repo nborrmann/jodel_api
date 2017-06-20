@@ -89,13 +89,10 @@ class AndroidAccount:
                 msg = _rcv_exact(s, length)
                 counter += 1
 
-                print("recv packet", responseTag, length, msg)
-
                 if responseTag == 3:
                     pass # login
 
                 elif responseTag == 4:
-                    print("connection closed by server")
                     break
 
                 elif responseTag == 8:
