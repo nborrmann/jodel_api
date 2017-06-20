@@ -198,10 +198,9 @@ are exclusive. If ``mine`` evaluates to ``true``, the other two arguments
 are discarded, if ``hashtag`` evaluates ``true`` , ``channel`` is 
 discarded.
 
-``get_newsfeed()`` is a new endpoint (as of March 17) that isn't yet
-available through the app. It returns all popular (upvotes/comments) 
-Jodels from a larger timeframe than the usual ``get_posts()`` methods
-can access. 
+``post_search()`` is a new endpoint (as of June 17) that isn't yet
+available through the app. It returns all posts from your location
+that contain a given string.
 
 You can pass additional arguments (such as proxies and timeouts) to all
 API calls through the ``**xargs`` argument that will be passed to the

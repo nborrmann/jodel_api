@@ -225,8 +225,10 @@ class JodelAccount:
     def get_my_voted_posts(self, skip=0, limit=60, after=None, **kwargs):
         return self._get_posts('votes', skip, limit, after, True, **kwargs)
 
-    def get_newsfeed(self, after=None, **kwargs):
-        return self._send_request('GET', '/v3/posts/newsfeed', params={'after': after}, **kwargs)
+    def post_search(self, message, skip=0, limit=60, **kwargs):
+        params = {"skip": skip, "limit": limit}
+        payload = {"message": message}
+        return self._send_request("POST", "/v3/posts/search", params=params, payload=payload, **kwargs)
 
     # ################### #
     # SINGLE POST METHODS #
