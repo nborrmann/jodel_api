@@ -5,7 +5,7 @@ with open(os.path.join(os.path.dirname(__file__), 'README.rst')) as f:
     long_description = f.read()
 
 setup(name='jodel_api',
-      version='1.1.7',
+      version='1.2.0',
       description='Unoffical Python Interface to the Jodel API',
       long_description=long_description,
       url='https://github.com/nborrmann/jodel_api',
@@ -27,9 +27,9 @@ setup(name='jodel_api',
         'Topic :: Software Development :: Libraries :: Python Modules',
       ],
       keywords='jodel',
-      install_requires=['requests', 'future', 'mock'],
       package_dir={'': 'src'},
-      py_modules=['jodel_api'],
+      install_requires=['requests', 'future', 'mock', 'varint', 'protobuf'],
+      packages=find_packages('src'),
       setup_requires=['pytest-runner', ],
       tests_require=['pytest', 'flaky'],
       zip_safe=False)

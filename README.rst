@@ -54,7 +54,7 @@ issues one request to update the location of the account.
 .. code:: python
 
     >>> j = jodel_api.JodelAccount(lat=lat, lng=lng, city=city, access_token='xxx', expiration_date='xxx', 
-                                   refresh_token='xxx', distinct_id='xxx', device_uid='xxx')
+                                   refresh_token='xxx', distinct_id='xxx', device_uid='xxx', is_legacy=True)
     (204, '')
 
 Add ``update_location=False`` to suppress this behaviour. The
@@ -64,12 +64,6 @@ calls:
 .. code:: python
 
     >>> j = jodel_api.JodelAccount(lat=lat, lng=lng, city=city, update_location=False, **account_data)
-
-For some functionality like voting and posting (look out for error 478) 
-accounts need to be verified. **The captcha verification method has been
-disabled as of June 17.** Verification is now only possible through 
-Google Cloud Messaging which is not currently possible through this 
-library.
 
 After ``expiration_date`` has passed, call ``refresh_access_tokens()``
 to re-authenticate. If ``refresh_access_token`` fails, use
@@ -83,6 +77,48 @@ but preserves the account's data (karma, etc)):
     >>> j.refresh_all_tokens()
     (200, {'expires_in': 604800, 'access_token': 'xxx', 'token_type': 'bearer', 'returning': True,
            'refresh_token': 'xxx', 'expiration_date': 1472600000, 'distinct_id': 'xxx'})
+
+
+Account Verification
+~~~~~~~~~~~~~~~~~~~~
+
+For some functionality like voting and posting (look out for error 478) 
+accounts need to be verified. 
+
+With Jodel version ``4.48`` captcha verification has been disabled. 
+However old accounts will continue to work with version ``4.47``. But if you
+ever use an old, verified account with version ``4.48`` it will become
+unverified. To this end, use the flag ``is_legacy=True`` in the 
+constructor when you instantiate an old account (on by default). New
+accounts must be created with ``is_legacy=False``.
+
+In ``4.48`` accounts can only be verified through Google Cloud Messaging.
+The steps are as follows:
+
+1. Create an Android Account: ``a = jodel_api.AndroidAccount()``
+2. Request a push token: ``a.get_push_token()``
+3. Send push token to Jodel Servers: ``j.send_push_token(token)``
+4. Log into GCM and read push messages (``verification_code``) from 
+   Jodel: ``verification = a.receive_verification_from_gcm()``
+5. Send the verification code to Jodel to verify the account:
+   ``a.verify_push(server_time, verification_code)``
+
+In ``jodel_api`` this is implemented as follows:
+
+.. code:: python
+   
+   a = jodel_api.AndroidAccount()
+   j.verify(a)
+
+Tip: If the call is successful, save the account credentials and reuse
+them later (if you get ``REGISTRATION_INVALID`` retry with another
+account):
+
+.. code:: python
+   
+   account_id, security_token = a.account_id, a.security_token
+   a2 = jodel_api.AndroidAccount(account_id, security_token)
+
 
 API calls
 ~~~~~~~~~
@@ -186,6 +222,9 @@ Error Codes
    you messed up, or it is outdated. You need to call 
    ``refresh_access_token()`` or ``refresh_all_token()`` (check the 
    above section on account creation).
+-  **401 "Action not allowed"**: You are using a ``4.48`` account 
+   with ``is_legacy=True``, but ``4.48`` accounts are not allowed
+   to downgrade.
 -  **403 "Access Denied"**: Your IP is banned accross endpoints,
    just read-only endpoints still work. Effective for 24 hours.
 -  **429 "Too Many Requests"**: Your IP is rate-limited. Applies only
@@ -193,8 +232,7 @@ Error Codes
 -  **477 "Signed Request Expected"**: This library should handle request
    signing. Make sure to upgrade to the latest version of ``jodel_api``,
    as the signing key changes every few weeks.
--  **478 "Account not verified"**: Solve the captcha challenge (eg.
-   through ``verify_account()``).
+-  **478 "Account not verified"**: Verify the account through GCM.
 -  **502 "Bad Gateway"**: Something went wrong server-side. This happens
    pretty randomly. ``jodel_api`` automatically retries two times when
    it sees this error. If you encounter this status, the jodel servers
@@ -223,13 +261,13 @@ status codes, not the contents of the responses (ie. they test whether
 the API endpoints are still valid).
 
 -  For the tests in ``class TestUnverifiedAccount`` a new account is
-   created on every run and they test read-only functions for which the
-   account does not need to be verified.
--  Tests in ``class TestVerifiedAccount`` need an already verified
-   account to test voting and creating posts (posts are deleted after
-   creation). To run these tests you need to verify an account by
+   created on every run and they test GCM verification, posting and
+   read-only functions   
+-  Tests in ``class TestLegacyVerifiedAccount`` need an already verified
+   legacy account and test if it still works.
+   To run these tests you need to verify an account by
    solving the captcha and save its ``device_uid`` in the
-   environment variable ``JODEL_ACCOUNT``. Run
+   environment variable ``JODEL_ACCOUNT_LEGACY``. Run
    ``j.get_account_data()['device_uid']`` to get the value.
 
    Linux:

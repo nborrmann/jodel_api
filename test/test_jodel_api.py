@@ -34,15 +34,14 @@ class TestUnverifiedAccount:
         assert r[0] == 200
         assert "posts" in r[1] and "post_id" in r[1]["posts"][0]
         self.pid = r[1]['posts'][0]['post_id']
+        self.pid1 = r[1]['posts'][0]['post_id']
+        self.pid2 = r[1]['posts'][1]['post_id']
+        assert self.j.follow_channel(test_channel)[0] == 204
+
+        assert self.j.get_account_data()['is_legacy'] == False
 
     def __repr__(self):
         return "TestUnverifiedAccount <%s, %s>" % (self.j.get_account_data()['device_uid'], self.pid)
-
-    @flaky(max_runs=1)
-    def test_setup(self):
-        # This is a workaround for a bug in flaky that makes all tests pass if there is an error in setup
-        # https://github.com/box/flaky/issues/124
-        assert 1==1
 
     def test_reinitalize(self):
         acc = self.j.get_account_data()
@@ -152,10 +151,6 @@ class TestUnverifiedAccount:
         channel = r[1]["local"][0]["channel"]
         assert self.j.get_channel_meta(channel)[0] == 200
 
-    def test_follow_channel(self):
-        assert self.j.follow_channel(test_channel)[0] == 204
-        assert self.j.unfollow_channel(test_channel)[0] == 204
-
     def test_set_get_config(self):
         user_type = choice(["high_school", "high_school_graduate", "student", "apprentice", "employee", "other"])
         r = self.j.set_user_profile(user_type=user_type, gender=choice(['m', 'f']))
@@ -198,10 +193,6 @@ class TestUnverifiedAccount:
         assert self.j.pin(self.pid)[0] == 200
         assert self.j.unpin(self.pid)[0] == 200
 
-    def test_vote(self):
-        assert self.j.upvote(self.pid)[0] == 478
-        assert self.j.downvote(self.pid)[0] == 478
-
     def test_switch_notifications(self):
         r = self.j.enable_notifications(self.pid)
         assert r[0] == 200
@@ -210,6 +201,71 @@ class TestUnverifiedAccount:
         r = self.j.disable_notifications(self.pid)
         assert r[0] == 200
         assert r[1]["notifications_enabled"] == False
+
+    @flaky(max_runs=3, rerun_filter=delay_rerun)
+    def test_verify(self):
+        r = self.j.verify()
+        assert r[0] == 200
+
+        r = self.j.get_user_config()
+        assert r[0] == 200
+        assert r[1]['verified'] == True
+
+    def test_vote(self):
+        assert self.j.upvote(self.pid)[0] == 200
+        assert self.j.downvote(self.pid)[0] == 200
+
+    def test_post_reply(self):
+        msg = "This is an automated test message. Location is %f:%f. Time is %s. %s" % \
+                (lat, lng, datetime.datetime.now(), "".join(choice(ascii_lowercase) for _ in range(20)))
+        r = self.j.create_post(msg, ancestor=self.pid1)
+        print(r)
+        assert r[0] == 200
+        assert "post_id" in r[1]
+
+        p = self.j.get_post_details(self.pid1)
+        assert p[0] == 200
+        assert "children" in p[1]
+        print([post["post_id"] for post in p[1]["children"]])
+        assert r[1]["post_id"] in [post["post_id"] for post in p[1]["children"]]
+        my_post = next(post for post in p[1]["children"] if post["post_id"] == r[1]["post_id"])
+        assert my_post["message"] == msg
+
+        assert self.j.delete_post(r[1]["post_id"])[0] == 204
+
+    def test_post_channel_img(self):
+        color = "9EC41C"
+        msg = "This is an automated test message. Color is #%s. Location is %f:%f. Time is %s. %s" % \
+                (color, lat, lng, datetime.datetime.now(), "".join(choice(ascii_lowercase) for _ in range(20)))
+        with open("test/testimg.png", "rb") as f:
+            imgdata = base64.b64encode(f.read()).decode("utf-8") + "".join(choice(ascii_lowercase) for _ in range(10))
+        
+        r = self.j.create_post(msg, b64img=imgdata, color=color, channel=test_channel)
+        print(r)
+        assert r[0] == 200
+        assert "post_id" in r[1]
+
+        assert self.j.delete_post(r[1]["post_id"])[0] == 204
+
+    @pytest.mark.skip()
+    def test_post_channel(self):
+        color = "9EC41C"
+        msg = "This is an automated test message to the channel %s. Color is #%s. Location is %f:%f. Time is %s. %s" % \
+                (test_channel, color, lat, lng, datetime.datetime.now(), "".join(choice(ascii_lowercase) for _ in range(20)))
+        
+        r = self.j.create_post(msg, color=color, channel=test_channel)
+        print(r)
+        assert r[0] == 200
+        assert "post_id" in r[1]
+
+        p = self.j.get_posts_recent(channel=test_channel)
+        assert p[0] == 200
+        print([post["post_id"] for post in p[1]["posts"]])
+        assert r[1]["post_id"] in [post["post_id"] for post in p[1]["posts"]]
+        my_post = next(post for post in p[1]["posts"] if post["post_id"] == r[1]["post_id"])
+        assert my_post["message"] == msg
+
+        assert self.j.delete_post(r[1]["post_id"])[0] == 204
 
     @patch('jodel_api.s.request')
     def test_bad_gateway_retry(self, requests_func):
@@ -227,14 +283,20 @@ class TestUnverifiedAccount:
         assert r[0] == 200
         assert requests_func.call_count == 1
 
-@pytest.mark.skipif(not os.environ.get("JODEL_ACCOUNT"), reason="requires an account uid as environment variable")
-class TestVerifiedAccount:
+    def test_follow_channel(self):
+        assert self.j.follow_channel(test_channel)[0] == 204
+        assert self.j.unfollow_channel(test_channel)[0] == 204
+
+
+@pytest.mark.skipif(not os.environ.get("JODEL_ACCOUNT_LEGACY"), reason="requires an account uid as environment variable")
+class TestLegacyVerifiedAccount:
 
     @classmethod
     @flaky(max_runs=2, rerun_filter=delay_rerun)
     def setup_class(self):
-        acc = {'device_uid': os.environ.get("JODEL_ACCOUNT")}
-        self.j = jodel_api.JodelAccount(lat, lng, city, update_location=False, **acc)
+        acc = {'device_uid': os.environ.get("JODEL_ACCOUNT_LEGACY")}
+        self.j = jodel_api.JodelAccount(lat, lng, city, update_location=False, is_legacy=True, **acc)
+        assert self.j.get_account_data()['is_legacy']
 
         assert self.j.set_location(lat, lng, city)[0] == 204
 
@@ -258,6 +320,9 @@ class TestVerifiedAccount:
 
     def __repr__(self):
         return "TestUnverifiedAccount <%s, %s>" % (self.pid1, self.pid2)
+
+    def test_legacy(self):
+        assert self.j.get_account_data()['is_legacy']
 
     @pytest.mark.xfail(reason="after parameter doesn't work with /mine/ endpoints")
     def test_my_pin_after(self):
@@ -329,60 +394,6 @@ class TestVerifiedAccount:
         assert p[0] == 200
         assert p[1]["color"] == color
         assert p[1]["message"] == msg
-
-        assert self.j.delete_post(r[1]["post_id"])[0] == 204
-
-    @flaky(max_runs=2, rerun_filter=delay_rerun)
-    def test_post_reply(self):
-        msg = "This is an automated test message. Location is %f:%f. Time is %s. %s" % \
-                (lat, lng, datetime.datetime.now(), "".join(choice(ascii_lowercase) for _ in range(20)))
-        r = self.j.create_post(msg, ancestor=self.pid1)
-        print(r)
-        assert r[0] == 200
-        assert "post_id" in r[1]
-
-        p = self.j.get_post_details(self.pid1)
-        assert p[0] == 200
-        assert "children" in p[1]
-        print([post["post_id"] for post in p[1]["children"]])
-        assert r[1]["post_id"] in [post["post_id"] for post in p[1]["children"]]
-        my_post = next(post for post in p[1]["children"] if post["post_id"] == r[1]["post_id"])
-        assert my_post["message"] == msg
-
-        assert self.j.delete_post(r[1]["post_id"])[0] == 204
-
-    @flaky(max_runs=2, rerun_filter=delay_rerun)
-    def test_post_channel(self):
-        color = "9EC41C"
-        msg = "This is an automated test message to the channel %s. Color is #%s. Location is %f:%f. Time is %s. %s" % \
-                (test_channel, color, lat, lng, datetime.datetime.now(), "".join(choice(ascii_lowercase) for _ in range(20)))
-        
-        r = self.j.create_post(msg, color=color, channel=test_channel)
-        print(r)
-        assert r[0] == 200
-        assert "post_id" in r[1]
-
-        p = self.j.get_posts_recent(channel=test_channel)
-        assert p[0] == 200
-        print([post["post_id"] for post in p[1]["posts"]])
-        assert r[1]["post_id"] in [post["post_id"] for post in p[1]["posts"]]
-        my_post = next(post for post in p[1]["posts"] if post["post_id"] == r[1]["post_id"])
-        assert my_post["message"] == msg
-
-        assert self.j.delete_post(r[1]["post_id"])[0] == 204
-
-    @flaky(max_runs=2, rerun_filter=delay_rerun)
-    def test_post_channel_img(self):
-        color = "9EC41C"
-        msg = "This is an automated test message. Color is #%s. Location is %f:%f. Time is %s. %s" % \
-                (color, lat, lng, datetime.datetime.now(), "".join(choice(ascii_lowercase) for _ in range(20)))
-        with open("test/testimg.png", "rb") as f:
-            imgdata = base64.b64encode(f.read()).decode("utf-8") + "".join(choice(ascii_lowercase) for _ in range(10))
-        
-        r = self.j.create_post(msg, b64img=imgdata, color=color, channel=test_channel)
-        print(r)
-        assert r[0] == 200
-        assert "post_id" in r[1]
 
         assert self.j.delete_post(r[1]["post_id"])[0] == 204
 
