@@ -36,6 +36,7 @@ class TestUnverifiedAccount:
         self.pid = r[1]['posts'][0]['post_id']
         self.pid1 = r[1]['posts'][0]['post_id']
         self.pid2 = r[1]['posts'][1]['post_id']
+        assert self.j.follow_channel(test_channel)[0] == 204
 
         assert self.j.get_account_data()['is_legacy'] == False
 
@@ -150,10 +151,6 @@ class TestUnverifiedAccount:
         channel = r[1]["local"][0]["channel"]
         assert self.j.get_channel_meta(channel)[0] == 200
 
-    def test_follow_channel(self):
-        assert self.j.follow_channel(test_channel)[0] == 204
-        assert self.j.unfollow_channel(test_channel)[0] == 204
-
     def test_set_get_config(self):
         user_type = choice(["high_school", "high_school_graduate", "student", "apprentice", "employee", "other"])
         r = self.j.set_user_profile(user_type=user_type, gender=choice(['m', 'f']))
@@ -205,22 +202,6 @@ class TestUnverifiedAccount:
         assert r[0] == 200
         assert r[1]["notifications_enabled"] == False
 
-    @patch('jodel_api.s.request')
-    def test_bad_gateway_retry(self, requests_func):
-        requests_func.return_value = MagicMock(status_code=502, text="Bad Gateway")
-
-        r = self.j.enable_notifications(self.pid)
-        assert r[0] == 502
-        assert requests_func.call_count == 3
-
-    @patch('jodel_api.s.request')
-    def test_bad_gateway_no_retry(self, requests_func):
-        requests_func.return_value = MagicMock(status_code=200, json={'notifications_enabled': True})
-
-        r = self.j.enable_notifications(self.pid)
-        assert r[0] == 200
-        assert requests_func.call_count == 1
-
     @flaky(max_runs=3, rerun_filter=delay_rerun)
     def test_verify(self):
         r = self.j.verify()
@@ -230,12 +211,10 @@ class TestUnverifiedAccount:
         assert r[0] == 200
         assert r[1]['verified'] == True
 
-    @flaky(max_runs=2, rerun_filter=delay_rerun)
     def test_vote(self):
         assert self.j.upvote(self.pid)[0] == 200
         assert self.j.downvote(self.pid)[0] == 200
-        
-    @flaky(max_runs=2, rerun_filter=delay_rerun)
+
     def test_post_reply(self):
         msg = "This is an automated test message. Location is %f:%f. Time is %s. %s" % \
                 (lat, lng, datetime.datetime.now(), "".join(choice(ascii_lowercase) for _ in range(20)))
@@ -254,7 +233,6 @@ class TestUnverifiedAccount:
 
         assert self.j.delete_post(r[1]["post_id"])[0] == 204
 
-    @flaky(max_runs=2, rerun_filter=delay_rerun)
     def test_post_channel_img(self):
         color = "9EC41C"
         msg = "This is an automated test message. Color is #%s. Location is %f:%f. Time is %s. %s" % \
@@ -269,7 +247,7 @@ class TestUnverifiedAccount:
 
         assert self.j.delete_post(r[1]["post_id"])[0] == 204
 
-    @flaky(max_runs=2, rerun_filter=delay_rerun)
+    @flaky(max_runs=1, rerun_filter=delay_rerun)
     @pytest.mark.skip()
     def test_post_channel(self):
         color = "9EC41C"
@@ -289,6 +267,26 @@ class TestUnverifiedAccount:
         assert my_post["message"] == msg
 
         assert self.j.delete_post(r[1]["post_id"])[0] == 204
+
+    @patch('jodel_api.s.request')
+    def test_bad_gateway_retry(self, requests_func):
+        requests_func.return_value = MagicMock(status_code=502, text="Bad Gateway")
+
+        r = self.j.enable_notifications(self.pid)
+        assert r[0] == 502
+        assert requests_func.call_count == 3
+
+    @patch('jodel_api.s.request')
+    def test_bad_gateway_no_retry(self, requests_func):
+        requests_func.return_value = MagicMock(status_code=200, json={'notifications_enabled': True})
+
+        r = self.j.enable_notifications(self.pid)
+        assert r[0] == 200
+        assert requests_func.call_count == 1
+        
+    def test_follow_channel(self):
+        assert self.j.follow_channel(test_channel)[0] == 204
+        assert self.j.unfollow_channel(test_channel)[0] == 204
 
 
 @pytest.mark.skipif(not os.environ.get("JODEL_ACCOUNT_LEGACY"), reason="requires an account uid as environment variable")
