@@ -95,13 +95,13 @@ accounts must be created with ``is_legacy=False``.
 In ``4.48`` accounts can only be verified through Google Cloud Messaging.
 The steps are as follows:
 
-1. Create an Android Account (``a = jodel_api.AndroidAccount()``)
-2. Request a push token (``a.get_push_token()``)
-3. Send push token to Jodel Servers (``j.send_push_token(token)``)
-4. Log into GCM and read push messages (``verification_code``) from Jodel
-   (``verification = a.receive_verification_from_gcm()``)
-5. Send the verification code to Jodel to verify the account
-   (``a.verify_push(server_time, verification_code)``)
+1. Create an Android Account: ``a = jodel_api.AndroidAccount()``
+2. Request a push token: ``a.get_push_token()``
+3. Send push token to Jodel Servers: ``j.send_push_token(token)``
+4. Log into GCM and read push messages (``verification_code``) from 
+   Jodel: ``verification = a.receive_verification_from_gcm()``
+5. Send the verification code to Jodel to verify the account:
+   ``a.verify_push(server_time, verification_code)``
 
 In ``jodel_api`` this is implemented as follows:
 
@@ -232,8 +232,7 @@ Error Codes
 -  **477 "Signed Request Expected"**: This library should handle request
    signing. Make sure to upgrade to the latest version of ``jodel_api``,
    as the signing key changes every few weeks.
--  **478 "Account not verified"**: Solve the captcha challenge (eg.
-   through ``verify_account()``).
+-  **478 "Account not verified"**: Verify the account through GCM.
 -  **502 "Bad Gateway"**: Something went wrong server-side. This happens
    pretty randomly. ``jodel_api`` automatically retries two times when
    it sees this error. If you encounter this status, the jodel servers
