@@ -165,12 +165,12 @@ class JodelAccount:
         if r[0] != 204:
             return r
 
-        for i in range(3):
+        for i in range(1, 5):
             try:
-                verification = android_account.receive_verification_from_gcm()
+                verification = android_account.receive_verification_from_gcm(2 * i)
                 break
             except gcmhack.GcmException:
-                if i == 2:
+                if i == 4:
                     raise
             except:
                 raise

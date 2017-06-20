@@ -69,7 +69,7 @@ class AndroidAccount:
         else:
             raise GcmException(r.text)
 
-    def receive_verification_from_gcm(self):
+    def receive_verification_from_gcm(self, timeout=2.0):
         # We read all messages on the server until there are none for a timeout of two seconds.
         # Return the last verification_code that we receive.
         # Note: We cannot return on the first verification_code because the server sometimes sends
@@ -84,7 +84,7 @@ class AndroidAccount:
         counter, verification_data = 0, None
         try:
             while True:
-                responseTag = ord(_rcv_exact(s, 1))
+                responseTag = ord(_rcv_exact(s, 1, timeout))
                 length = varint.decode_stream(s)
                 msg = _rcv_exact(s, length)
                 counter += 1
@@ -123,10 +123,10 @@ class AndroidAccount:
             raise_from(GcmException("No verification_code received"), None)
 
 
-def _rcv_exact(sock, num_bytes):
+def _rcv_exact(sock, num_bytes, timeout=2.0):
     buf = b''
     while len(buf) < num_bytes:
-        ready = select.select([sock], [], [], 2.0)
+        ready = select.select([sock], [], [], timeout)
         if ready[0]:
             buf += sock.recv(num_bytes - len(buf))
         else:
