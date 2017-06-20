@@ -34,6 +34,8 @@ class TestUnverifiedAccount:
         assert r[0] == 200
         assert "posts" in r[1] and "post_id" in r[1]["posts"][0]
         self.pid = r[1]['posts'][0]['post_id']
+        self.pid1 = r[1]['posts'][0]['post_id']
+        self.pid2 = r[1]['posts'][1]['post_id']
 
         assert self.j.get_account_data()['is_legacy'] == False
 
