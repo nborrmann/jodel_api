@@ -20,8 +20,12 @@ class GcmException(Exception):
 
 
 class AndroidAccount:
+    sock = None
+    responseTag = 0
 
     def __init__(self, android_id=None, security_token=None, **kwargs):
+        self.session = requests.Session()
+
         if android_id and security_token:
             self.android_id = android_id
             self.security_token = security_token
@@ -43,7 +47,7 @@ class AndroidAccount:
         headers = {"Content-type": "application/x-protobuffer",
                    "Accept-Encoding": "gzip",
                    "User-Agent": "Android-Checkin/2.0 (vbox86p JLS36G); gzip"}
-        r = requests.post("https://android.clients.google.com/checkin", headers=headers, data=data, **kwargs)
+        r = self.session.post("https://android.clients.google.com/checkin", headers=headers, data=data, **kwargs)
 
         if r.status_code == 200:
             cresp = checkin_pb2.CheckinResponse()
@@ -63,39 +67,37 @@ class AndroidAccount:
                 'X-appid': "".join(random.choice(string.ascii_letters + string.digits) for _ in range(11)),
                 'X-scope': 'GCM' }
 
-        r = requests.post("https://android.clients.google.com/c2dm/register3", headers=headers, data=data, **kwargs)
+        r = self.session.post("https://android.clients.google.com/c2dm/register3", headers=headers, data=data, **kwargs)
         if r.status_code == 200 and "token" in r.text:
             return r.text.split("=")[1]
         else:
             raise GcmException(r.text)
 
-    def receive_verification_from_gcm(self):
-        # We read all messages on the server until there are none for a timeout of two seconds.
+    def receive_verification_from_gcm(self, retry=True):
         # Return the last verification_code that we receive.
         # Note: We cannot return on the first verification_code because the server sometimes sends
         # the same code twice.
-        s = ssl.wrap_socket(socket.socket(socket.AF_INET, socket.SOCK_STREAM))
-        s.connect(("mtalk.google.com", 5228))
-        s.setblocking(False)
+        self._establish_connection()
+        verification_data = None
 
-        counter, verification_data = 0, None
         try:
-            _gcm_send_login(s, self.android_id, self.security_token)
-            version = _rcv_exact(s, 1)
-
             while True:
-                responseTag = ord(_rcv_exact(s, 1))
-                length = varint.decode_stream(s)
-                msg = _rcv_exact(s, length)
-                counter += 1
+                # Sometimes the server sends a response_tag and length but doesn't send the actual content,
+                # so we need to remeber them and read just the content on the next call.
+                if not self.responseTag:
+                    self.responseTag = ord(self._rcv_exact(1))
+                    self.length = varint.decode_stream(self.sock)
+                
+                msg = self._rcv_exact(self.length)
+                self.counter += 1
 
-                if responseTag == 3:
+                if self.responseTag == 3:
                     pass # login
 
-                elif responseTag == 4:
-                    break
+                elif self.responseTag == 4:
+                    raise Exception("socket closed by server")
 
-                elif responseTag == 8:
+                elif self.responseTag == 8:
                     dms = mcs_pb2.DataMessageStanza()
                     dms.ParseFromString(msg)
 
@@ -108,47 +110,70 @@ class AndroidAccount:
 
                     if dms.category == "com.tellm.android.app" and message_type == "16":
                         verification_data = data
+
+                self.responseTag, self.length = 0, 0
+
         except socket.timeout:
-            _gcm_send_heartbeat(s, counter)
-            pass
+            self._gcm_send_heartbeat()
         except Exception:
-            raise
-        finally:
-            s.close()
+            # maybe the socket was closed because we timed out in between calls or 
+            # the connection was interrupted. We close the socket and try to reopen.
+            try:
+                self.sock.close()
+            except:
+                pass
+            self.sock = None
+
+            if retry:
+                self.receive_verification_from_gcm(False)
+            else:
+                raise
 
         try:
-            return json.loads(verification_data)
+            d = json.loads(verification_data)
+            return d
         except Exception as e:
             raise_from(GcmException("No verification_code received"), None)
 
+    def _establish_connection(self):
+        if not self.sock:
+            self.sock = ssl.wrap_socket(socket.socket(socket.AF_INET, socket.SOCK_STREAM))
+            self.sock.connect(("mtalk.google.com", 5228))
+            self.sock.setblocking(False)
 
-def _rcv_exact(sock, num_bytes):
-    buf = b''
-    while len(buf) < num_bytes:
-        ready = select.select([sock], [], [], 0.2)
-        if ready[0]:
-            buf += sock.recv(num_bytes - len(buf))
-        else:
-            raise socket.timeout
-    return buf
+            self._gcm_send_login(self.android_id, self.security_token)
+            version = self._rcv_exact(1)
 
-def _gcm_send_heartbeat(sock, counter):
-    ping = mcs_pb2.HeartbeatAck()
-    ping.last_stream_id_received = counter
-    ping = ping.SerializeToString()
-    sock.send(struct.pack('B', 0) + varint.encode(len(ping)) + ping)
+            self.counter = 0
 
-def _gcm_send_login(sock, android_id, security_token):
-    lr = mcs_pb2.LoginRequest()
-    lr.auth_service = 2
-    lr.auth_token = str(security_token)
-    lr.id = "android-11"
-    lr.domain = "mcs.android.com"
-    lr.device_id = "android-%0.2X" % android_id
-    lr.resource = str(android_id)
-    lr.user = str(android_id)
-    lr.account_id = android_id
+    def _rcv_exact(self, num_bytes):
+        buf = b''
+        while len(buf) < num_bytes:
+            ready = select.select([self.sock], [], [], 0.2)
+            if ready[0]:
+                buf += self.sock.recv(num_bytes - len(buf))
+            else:
+                raise socket.timeout
 
-    data = lr.SerializeToString()
-    sock.sendall(struct.pack('BB', 41, 2) + varint.encode(len(data)) + data)
+        return buf
+
+    def _gcm_send_heartbeat(self):
+        ping = mcs_pb2.HeartbeatAck()
+        ping.last_stream_id_received = self.counter
+        ping = ping.SerializeToString()
+        self.sock.send(struct.pack('B', 0) + varint.encode(len(ping)) + ping)
+
+    def _gcm_send_login(self, android_id, security_token):
+        lr = mcs_pb2.LoginRequest()
+        lr.auth_service = 2
+        lr.auth_token = str(security_token)
+        lr.id = "android-11"
+        lr.domain = "mcs.android.com"
+        lr.device_id = "android-%0.2X" % android_id
+        lr.resource = str(android_id)
+        lr.user = str(android_id)
+        lr.account_id = android_id
+
+        data = lr.SerializeToString()
+        self.sock.sendall(struct.pack('BB', 41, 2) + varint.encode(len(data)) + data)
 
