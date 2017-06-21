@@ -250,9 +250,6 @@ class TestUnverifiedAccount:
         assert self.j.delete_post(r[1]["post_id"])[0] == 204
         """
 
-    def test_bla():
-        assert 1==1
-
     @patch('jodel_api.s.request')
     def test_bad_gateway_retry(self, requests_func):
         requests_func.return_value = MagicMock(status_code=502, text="Bad Gateway")
