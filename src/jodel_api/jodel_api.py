@@ -161,21 +161,29 @@ class JodelAccount:
             time.sleep(5)
 
         token = android_account.get_push_token(**kwargs)
-        r = self.send_push_token(token, **kwargs)
-        if r[0] != 204:
-            return r
+        
+        for i in range(3):
+            r = self.send_push_token(token, **kwargs)
+            if r[0] != 204:
+                return r
 
-        for i in range(1, 5):
             try:
-                verification = android_account.receive_verification_from_gcm(2 * i)
-                break
-            except gcmhack.GcmException:
-                if i == 4:
-                    raise
-            except:
-                raise
+                verification = self._read_verificiation(android_account)
 
-        return self.verify_push(verification['server_time'], verification['verification_code'], **kwargs)
+                status, r = self.verify_push(verification['server_time'], verification['verification_code'], **kwargs)
+                if status == 200 or i == 2:
+                    return status, r
+            except gcmhack.GcmException:
+                if i == 2:
+                    raise
+
+    def _read_verificiation(self, android_account):
+        for j in range(3):
+            try:
+                return android_account.receive_verification_from_gcm()
+            except gcmhack.GcmException:
+                if j == 2:
+                    raise
 
     # ################# #
     # GET POSTS METHODS #

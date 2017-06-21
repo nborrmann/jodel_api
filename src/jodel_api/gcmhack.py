@@ -69,7 +69,7 @@ class AndroidAccount:
         else:
             raise GcmException(r.text)
 
-    def receive_verification_from_gcm(self, timeout=2.0):
+    def receive_verification_from_gcm(self):
         # We read all messages on the server until there are none for a timeout of two seconds.
         # Return the last verification_code that we receive.
         # Note: We cannot return on the first verification_code because the server sometimes sends
@@ -78,13 +78,13 @@ class AndroidAccount:
         s.connect(("mtalk.google.com", 5228))
         s.setblocking(False)
 
-        _gcm_send_login(s, self.android_id, self.security_token)
-        version = _rcv_exact(s, 1)
-
         counter, verification_data = 0, None
         try:
+            _gcm_send_login(s, self.android_id, self.security_token)
+            version = _rcv_exact(s, 1)
+
             while True:
-                responseTag = ord(_rcv_exact(s, 1, timeout))
+                responseTag = ord(_rcv_exact(s, 1))
                 length = varint.decode_stream(s)
                 msg = _rcv_exact(s, length)
                 counter += 1
@@ -108,9 +108,8 @@ class AndroidAccount:
 
                     if dms.category == "com.tellm.android.app" and message_type == "16":
                         verification_data = data
-
-                    _gcm_send_heartbeat(s, counter)
         except socket.timeout:
+            _gcm_send_heartbeat(s, counter)
             pass
         except Exception:
             raise
@@ -123,10 +122,10 @@ class AndroidAccount:
             raise_from(GcmException("No verification_code received"), None)
 
 
-def _rcv_exact(sock, num_bytes, timeout=2.0):
+def _rcv_exact(sock, num_bytes):
     buf = b''
     while len(buf) < num_bytes:
-        ready = select.select([sock], [], [], timeout)
+        ready = select.select([sock], [], [], 0.2)
         if ready[0]:
             buf += sock.recv(num_bytes - len(buf))
         else:
@@ -134,7 +133,7 @@ def _rcv_exact(sock, num_bytes, timeout=2.0):
     return buf
 
 def _gcm_send_heartbeat(sock, counter):
-    ping = mcs_pb2.HeartbeatPing()
+    ping = mcs_pb2.HeartbeatAck()
     ping.last_stream_id_received = counter
     ping = ping.SerializeToString()
     sock.send(struct.pack('B', 0) + varint.encode(len(ping)) + ping)
