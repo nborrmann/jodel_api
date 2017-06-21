@@ -228,7 +228,7 @@ class TestUnverifiedAccount:
 
         assert self.j.delete_post(r[1]["post_id"])[0] == 204
 
-"""
+    """
     @pytest.mark.skip()
     def test_post_channel(self):
         color = "9EC41C"
@@ -248,7 +248,10 @@ class TestUnverifiedAccount:
         assert my_post["message"] == msg
 
         assert self.j.delete_post(r[1]["post_id"])[0] == 204
-"""
+        """
+
+    def test_bla():
+        assert 1==1
 
     @patch('jodel_api.s.request')
     def test_bad_gateway_retry(self, requests_func):
