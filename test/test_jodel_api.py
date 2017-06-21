@@ -68,25 +68,6 @@ class TestUnverifiedAccount:
         assert self.j.get_my_replied_posts()[0] == 200
         assert self.j.get_my_pinned_posts()[0] == 200
 
-    @flaky(max_runs=1)
-    @pytest.mark.xfail(reason="newsfeed endpoint has been disabled")
-    def test_newsfeed_after(self):
-        r = self.j.get_newsfeed()
-        assert r[0] == 200
-        assert 'posts' in r[1]
-
-        if not r[1]['posts']:
-            pytest.skip("newsfeed returned empty response")
-
-        print("after:", r[1]['posts'][10])
-        r2 = self.j.get_newsfeed(after=r[1]['posts'][10]['post_id'])
-        assert r2[0] == 200
-        assert 'posts' in r2[1]
-
-        # did the after parameter work?
-        r2_create_times = [post["created_at"] for post in r2[1]["posts"]]
-        assert all([r[1]['posts'][10]["created_at"] > t for t in r2_create_times])
-
     def test_popular_after(self):
         r = self.j.get_posts_popular()
         assert r[0] == 200
@@ -247,6 +228,7 @@ class TestUnverifiedAccount:
 
         assert self.j.delete_post(r[1]["post_id"])[0] == 204
 
+"""
     @pytest.mark.skip()
     def test_post_channel(self):
         color = "9EC41C"
@@ -266,6 +248,7 @@ class TestUnverifiedAccount:
         assert my_post["message"] == msg
 
         assert self.j.delete_post(r[1]["post_id"])[0] == 204
+"""
 
     @patch('jodel_api.s.request')
     def test_bad_gateway_retry(self, requests_func):
