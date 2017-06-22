@@ -143,7 +143,7 @@ respective responses):
     >>> j.get_my_pinned_posts(skip=0, limit=60, after=None)
     >>> j.get_my_replied_posts(skip=0, limit=60, after=None)
     >>> j.get_my_voted_posts(skip=0, limit=60, after=None)
-    >>> j.get_newsfeed(after=None)
+    >>> j.post_search(message, skip=0, limit=60)    
 
     # API methods for interacting with single posts:
     >>> j.create_post(message=None, imgpath=None, b64img=None, color=None, ancestor=None, channel="")
@@ -273,14 +273,14 @@ the API endpoints are still valid).
 
    ::
 
-       export JODEL_ACCOUNT=a8aa02[...]dba
+       export JODEL_ACCOUNT_LEGACY=a8aa02[...]dba
 
    Windows (you need to restart the cmd/shell for this to take effect,
    or set it through gui):
 
    ::
 
-       setx JODEL_ACCOUNT a8aa02[...]dba
+       setx JODEL_ACCOUNT_LEGACY a8aa02[...]dba
 
    If this variable is not present, these tests will be skipped.
 
