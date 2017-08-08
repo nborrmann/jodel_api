@@ -36,6 +36,7 @@ class TestUnverifiedAccount:
         self.pid = r[1]['posts'][0]['post_id']
         self.pid1 = r[1]['posts'][0]['post_id']
         self.pid2 = r[1]['posts'][1]['post_id']
+        self.pid3 = r[1]['posts'][5]['post_id']
         assert self.j.follow_channel(test_channel)[0] == 204
 
         assert self.j.get_account_data()['is_legacy'] == False
@@ -160,14 +161,14 @@ class TestUnverifiedAccount:
         assert self.j.get_notifications()[0] == 200
 
     def test_post_details(self):
-        r = self.j.get_post_details(self.pid)
+        r = self.j.get_post_details(self.pid3)
         assert r[0] == 200
 
     def test_post_details_v3(self):
-        r = self.j.get_post_details_v3(self.pid)
+        r = self.j.get_post_details_v3(self.pid3)
         replies = len(r[1]["replies"])
         while(r[1]["remaining"] > 0):
-            r = self.j.get_post_details_v3(self.pid, r[1]["next"])
+            r = self.j.get_post_details_v3(self.pid3, r[1]["next"])
             replies += len(r[1]["replies"])
         assert r[0] == 200
         assert replies == r[1]["details"]["child_count"]
