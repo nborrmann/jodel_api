@@ -166,11 +166,12 @@ class TestUnverifiedAccount:
 
     def test_post_details_v3(self):
         r = self.j.get_post_details_v3(self.pid3)
+        assert r[0] == 200
         replies = len(r[1]["replies"])
         while(r[1]["remaining"] > 0):
             r = self.j.get_post_details_v3(self.pid3, r[1]["next"])
+            assert r[0] == 200
             replies += len(r[1]["replies"])
-        assert r[0] == 200
         assert replies == r[1]["details"]["child_count"]
         
     def test_share_url(self):
