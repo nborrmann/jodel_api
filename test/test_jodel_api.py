@@ -162,10 +162,15 @@ class TestUnverifiedAccount:
     def test_post_details(self):
         r = self.j.get_post_details(self.pid)
         assert r[0] == 200
-        assert len(r[1]["children"]) == r[1]["child_count"]
 
     def test_post_details_v3(self):
-        assert self.j.get_post_details_v3(self.pid)[0] == 200
+        r = self.j.get_post_details_v3(self.pid)
+        replies = len(r[1]["replies"])
+        while(r[1]["remaining"] > 0):
+            r = self.j.get_post_details_v3(self.pid, r[1]["next"])
+            replies += len(r[1]["replies"])
+        assert r[0] == 200
+        assert replies == r[1]["details"]["child_count"]
         
     def test_share_url(self):
         assert self.j.get_share_url(self.pid)[0] == 200
