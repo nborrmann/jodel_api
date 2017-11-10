@@ -125,7 +125,7 @@ class AndroidAccount:
             self.sock = None
 
             if retry:
-                self.receive_verification_from_gcm(False)
+                return self.receive_verification_from_gcm(False)
             else:
                 raise
 
