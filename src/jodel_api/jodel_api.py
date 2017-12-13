@@ -24,8 +24,8 @@ class JodelAccount:
 
     api_url = "https://api.go-tellm.com/api{}"
     client_id = '81e8a76e-1e02-4d17-9ba0-8a7020261b26'
-    secret = 'rpcrPfxRSeJZOXCXffvtJzRtTXnVlZAorilbRYOa'.encode('ascii')
-    version = '4.71.0'
+    secret = 'GnAXvETHFDbDfhngjDYEkszdqZowDpWsWuCectMJ'.encode('ascii')
+    version = '4.74.3'
     secret_legacy = 'hyTBJcvtpDLSgGUWjybbYUNKSSoVvMcfdjtjiQvf'.encode('ascii')
     version_legacy = '4.47.0'
 
