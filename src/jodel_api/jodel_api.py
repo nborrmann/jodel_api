@@ -24,8 +24,8 @@ class JodelAccount:
 
     api_url = "https://api.go-tellm.com/api{}"
     client_id = '81e8a76e-1e02-4d17-9ba0-8a7020261b26'
-    secret = 'saApqHUcytkxSGHYrJVEdNUbWFiwdVUZgNxQmyce'.encode('ascii')
-    version = '4.73.0'
+    secret = 'MfmdSjJPnKVcFVUcemCpOzBPiFEBIQDbLjvpsUPK'.encode('ascii')
+    version = '4.75.2'
     secret_legacy = 'hyTBJcvtpDLSgGUWjybbYUNKSSoVvMcfdjtjiQvf'.encode('ascii')
     version_legacy = '4.47.0'
 
@@ -34,7 +34,7 @@ class JodelAccount:
     device_uid = None
 
     def __init__(self, lat, lng, city, country=None, name=None, update_location=True,
-                 access_token=None, device_uid=None, refresh_token=None, distinct_id=None, expiration_date=None, 
+                 access_token=None, device_uid=None, refresh_token=None, distinct_id=None, expiration_date=None,
                  is_legacy=True, **kwargs):
         self.lat, self.lng, self.location_dict = lat, lng, self._get_location_dict(lat, lng, city, country, name)
 
@@ -103,10 +103,10 @@ class JodelAccount:
 
     @staticmethod
     def _get_location_dict(lat, lng, city, country=None, name=None):
-        return {"loc_accuracy": 0.0, 
-                "city": city, 
-                "loc_coordinates": {"lat": lat, "lng": lng}, 
-                "country": country if country else "DE", 
+        return {"loc_accuracy": 0.0,
+                "city": city,
+                "loc_coordinates": {"lat": lat, "lng": lng},
+                "country": country if country else "DE",
                 "name": name if name else city}
 
     def get_account_data(self):
@@ -122,7 +122,7 @@ class JodelAccount:
             self.is_legacy = False
             self.device_uid = ''.join(random.choice('abcdef0123456789') for _ in range(64))
 
-        payload = {"client_id": self.client_id, 
+        payload = {"client_id": self.client_id,
                    "device_uid": self.device_uid,
                    "location": self.location_dict}
 
@@ -137,8 +137,8 @@ class JodelAccount:
         return resp
 
     def refresh_access_token(self, **kwargs):
-        payload = {"client_id": self.client_id, 
-                   "distinct_id": self.distinct_id, 
+        payload = {"client_id": self.client_id,
+                   "distinct_id": self.distinct_id,
                    "refresh_token": self.refresh_token}
 
         resp = self._send_request("POST", "/v2/users/refreshToken", payload=payload, **kwargs)
@@ -161,7 +161,7 @@ class JodelAccount:
             time.sleep(5)
 
         token = android_account.get_push_token(**kwargs)
-        
+
         for i in range(3):
             r = self.send_push_token(token, **kwargs)
             if r[0] != 204:
@@ -323,7 +323,7 @@ class JodelAccount:
         elif notification_id:
             return self._send_request("PUT", "/v3/user/notifications/{}/read".format(notification_id), **kwargs)
         else:
-            raise ValueError("One of post_id or notification_id must not be null.") 
+            raise ValueError("One of post_id or notification_id must not be null.")
 
     # ############### #
     # CHANNEL METHODS #
