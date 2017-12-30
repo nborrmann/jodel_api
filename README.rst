@@ -116,7 +116,7 @@ account):
 
 .. code:: python
    
-   account_id, security_token = a.account_id, a.security_token
+   account_id, security_token = a.android_id, a.security_token
    a2 = jodel_api.AndroidAccount(account_id, security_token)
 
 
