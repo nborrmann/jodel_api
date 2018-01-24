@@ -116,7 +116,7 @@ account):
 
 .. code:: python
    
-   account_id, security_token = a.account_id, a.security_token
+   account_id, security_token = a.android_id, a.security_token
    a2 = jodel_api.AndroidAccount(account_id, security_token)
 
 
@@ -147,7 +147,7 @@ respective responses):
 
     # API methods for interacting with single posts:
     >>> j.create_post(message=None, imgpath=None, b64img=None, color=None, ancestor=None, channel="")
-    >>> j.get_post_details(post_id)
+    >>> j.get_post_details(post_id) # This endpoint has been deprecated. Use get_post_details_v3.
     >>> # This api endpoint implements paging and returns at most 50 replies,
     >>> # use the skip parameter to page through the thread:
     >>> j.get_post_details_v3(post_id, skip=0) 
