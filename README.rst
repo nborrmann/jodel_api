@@ -232,7 +232,7 @@ Error Codes
    signing. Make sure to upgrade to the latest version of ``jodel_api``,
    as the signing key changes every few weeks. You can set the signing key
    and version manually through these environment variables:
-   JODEL_API_JODELKEY and JODEL_API_JODELVERSION
+   JODEL_API_JODELKEY and JODEL_API_JODELVERSION (jodel_api will prefer newer versions)
 -  **478 "Account not verified"**: Verify the account through GCM.
 -  **502 "Bad Gateway"**: Something went wrong server-side. This happens
    pretty randomly. ``jodel_api`` automatically retries two times when
