@@ -15,6 +15,7 @@ import requests
 from urllib.parse import urlparse
 from jodel_api import gcmhack
 import time
+import os
 
 s = requests.Session()
 
@@ -24,10 +25,15 @@ class JodelAccount:
 
     api_url = "https://api.go-tellm.com/api{}"
     client_id = '81e8a76e-1e02-4d17-9ba0-8a7020261b26'
-    secret = 'oGJWWnyqVQiecgUejzUZSjXifrlGwWOJMreOGMIq'.encode('ascii')
-    version = '4.82.1'
-    secret_legacy = 'hyTBJcvtpDLSgGUWjybbYUNKSSoVvMcfdjtjiQvf'.encode('ascii')
+	secret_legacy = 'hyTBJcvtpDLSgGUWjybbYUNKSSoVvMcfdjtjiQvf'.encode('ascii')
     version_legacy = '4.47.0'
+
+    if os.environ.get('JODEL_API_JODELKEY') == None or os.environ.get('JODEL_API_JODELVERSION') == None:
+        secret = 'oGJWWnyqVQiecgUejzUZSjXifrlGwWOJMreOGMIq'.encode('ascii')
+        version = '4.82.1'
+    else:
+        secret = os.environ.get('JODEL_API_JODELKEY').encode('ascii')
+        version = os.environ.get('JODEL_API_JODELVERSION')
 
 
     access_token = None
