@@ -230,7 +230,9 @@ Error Codes
    to one specific endpoint.
 -  **477 "Signed Request Expected"**: This library should handle request
    signing. Make sure to upgrade to the latest version of ``jodel_api``,
-   as the signing key changes every few weeks.
+   as the signing key changes every few weeks. You can set the signing key
+   and version manually through these environment variables:
+   JODEL_API_JODELKEY and JODEL_API_JODELVERSION
 -  **478 "Account not verified"**: Verify the account through GCM.
 -  **502 "Bad Gateway"**: Something went wrong server-side. This happens
    pretty randomly. ``jodel_api`` automatically retries two times when
