@@ -16,6 +16,7 @@ from urllib.parse import urlparse
 from jodel_api import gcmhack
 import time
 import os
+import re
 
 s = requests.Session()
 
@@ -25,15 +26,18 @@ class JodelAccount:
 
     api_url = "https://api.go-tellm.com/api{}"
     client_id = '81e8a76e-1e02-4d17-9ba0-8a7020261b26'
-	secret_legacy = 'hyTBJcvtpDLSgGUWjybbYUNKSSoVvMcfdjtjiQvf'.encode('ascii')
+    secret_legacy = 'hyTBJcvtpDLSgGUWjybbYUNKSSoVvMcfdjtjiQvf'.encode('ascii')
     version_legacy = '4.47.0'
+    secret = 'oGJWWnyqVQiecgUejzUZSjXifrlGwWOJMreOGMIq'.encode('ascii')
+    version = '4.82.1'
 
-    if os.environ.get('JODEL_API_JODELKEY') == None or os.environ.get('JODEL_API_JODELVERSION') == None:
-        secret = 'oGJWWnyqVQiecgUejzUZSjXifrlGwWOJMreOGMIq'.encode('ascii')
-        version = '4.82.1'
-    else:
-        secret = os.environ.get('JODEL_API_JODELKEY').encode('ascii')
-        version = os.environ.get('JODEL_API_JODELVERSION')
+    if not (os.environ.get('JODEL_API_JODELKEY') == None or os.environ.get('JODEL_API_JODELVERSION') == None):
+        ver_environ = [int(s) for s in re.findall(r'\b\d+\b', os.environ.get('JODEL_API_JODELVERSION'))]
+        ver_builtin = [int(s) for s in re.findall(r'\b\d+\b', version)]
+
+        if ver_environ[0] >= ver_builtin[0] and ver_environ[1] >= ver_builtin[1] and ver_environ[2] > ver_builtin[2]:
+            secret = os.environ.get('JODEL_API_JODELKEY').encode('ascii')
+            version = os.environ.get('JODEL_API_JODELVERSION')
 
 
     access_token = None
