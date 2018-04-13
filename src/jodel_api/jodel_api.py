@@ -31,13 +31,18 @@ class JodelAccount:
     secret = 'oGJWWnyqVQiecgUejzUZSjXifrlGwWOJMreOGMIq'.encode('ascii')
     version = '4.82.1'
 
+
     if not (os.environ.get('JODEL_API_JODELKEY') == None or os.environ.get('JODEL_API_JODELVERSION') == None):
         ver_environ = [int(s) for s in re.findall(r'\b\d+\b', os.environ.get('JODEL_API_JODELVERSION'))]
         ver_builtin = [int(s) for s in re.findall(r'\b\d+\b', version)]
 
-        if ver_environ[0] >= ver_builtin[0] and ver_environ[1] >= ver_builtin[1] and ver_environ[2] > ver_builtin[2]:
-            secret = os.environ.get('JODEL_API_JODELKEY').encode('ascii')
-            version = os.environ.get('JODEL_API_JODELVERSION')
+        for i in range(len(ver_environ)):
+            if ver_builtin[i] < ver_environ[i]:
+                secret = os.environ.get('JODEL_API_JODELKEY').encode('ascii')
+                version = os.environ.get('JODEL_API_JODELVERSION')
+                break
+            elif ver_builtin[i] > ver_environ[i]:
+                break
 
 
     access_token = None
