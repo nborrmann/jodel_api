@@ -15,8 +15,8 @@ import requests
 from urllib.parse import urlparse
 from jodel_api import gcmhack
 import time
-import os
-import re
+from os import environ
+from re import findall
 
 s = requests.Session()
 
@@ -32,14 +32,14 @@ class JodelAccount:
     version = '4.82.1'
 
 
-    if not (os.environ.get('JODEL_API_JODELKEY') == None or os.environ.get('JODEL_API_JODELVERSION') == None):
-        ver_environ = [int(s) for s in re.findall(r'\b\d+\b', os.environ.get('JODEL_API_JODELVERSION'))]
-        ver_builtin = [int(s) for s in re.findall(r'\b\d+\b', version)]
+    if not (environ.get('JODEL_API_JODELKEY') == None or environ.get('JODEL_API_JODELVERSION') == None):
+        ver_environ = [int(s) for s in findall(r'\b\d+\b', environ.get('JODEL_API_JODELVERSION'))]
+        ver_builtin = [int(s) for s in findall(r'\b\d+\b', version)]
 
         for i in range(len(ver_environ)):
             if ver_builtin[i] < ver_environ[i]:
-                secret = os.environ.get('JODEL_API_JODELKEY').encode('ascii')
-                version = os.environ.get('JODEL_API_JODELVERSION')
+                secret = environ.get('JODEL_API_JODELKEY').encode('ascii')
+                version = environ.get('JODEL_API_JODELVERSION')
                 break
             elif ver_builtin[i] > ver_environ[i]:
                 break
