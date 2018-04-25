@@ -28,8 +28,8 @@ class JodelAccount:
     client_id = '81e8a76e-1e02-4d17-9ba0-8a7020261b26'
     secret_legacy = 'hyTBJcvtpDLSgGUWjybbYUNKSSoVvMcfdjtjiQvf'.encode('ascii')
     version_legacy = '4.47.0'
-    secret = 'oGJWWnyqVQiecgUejzUZSjXifrlGwWOJMreOGMIq'.encode('ascii')
-    version = '4.82.1'
+    secret = 'DKUdMXSujwAPihgJiMzHIDcXaxUNJwhBagBgBYlg'.encode('ascii')
+    version = '4.84.1'
 
 
     if not (environ.get('JODEL_API_JODELKEY') == None or environ.get('JODEL_API_JODELVERSION') == None):
