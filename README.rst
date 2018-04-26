@@ -219,7 +219,7 @@ Error Codes
 
 -  **401 "Unauthorized"**: Your ``access_token`` is invalid. Either 
    you messed up, or it is outdated. You need to call 
-   ``refresh_access_token()`` or ``refresh_all_token()`` (check the 
+   ``refresh_access_token()`` or ``refresh_all_tokens()`` (check the 
    above section on account creation).
 -  **401 "Action not allowed"**: You are using a ``4.48`` account 
    with ``is_legacy=True``, but ``4.48`` accounts are not allowed
