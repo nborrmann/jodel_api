@@ -219,7 +219,7 @@ Error Codes
 
 -  **401 "Unauthorized"**: Your ``access_token`` is invalid. Either 
    you messed up, or it is outdated. You need to call 
-   ``refresh_access_token()`` or ``refresh_all_token()`` (check the 
+   ``refresh_access_token()`` or ``refresh_all_tokens()`` (check the 
    above section on account creation).
 -  **401 "Action not allowed"**: You are using a ``4.48`` account 
    with ``is_legacy=True``, but ``4.48`` accounts are not allowed
@@ -230,7 +230,9 @@ Error Codes
    to one specific endpoint.
 -  **477 "Signed Request Expected"**: This library should handle request
    signing. Make sure to upgrade to the latest version of ``jodel_api``,
-   as the signing key changes every few weeks.
+   as the signing key changes every few weeks. You can set the signing key
+   and version manually through these environment variables:
+   JODEL_API_JODELKEY and JODEL_API_JODELVERSION (jodel_api will prefer newer versions)
 -  **478 "Account not verified"**: Verify the account through GCM.
 -  **502 "Bad Gateway"**: Something went wrong server-side. This happens
    pretty randomly. ``jodel_api`` automatically retries two times when
